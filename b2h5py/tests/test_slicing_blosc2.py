@@ -1,9 +1,7 @@
+"""Dataset Blosc2 optimized slicing test module.
 
-"""
-    Dataset Blosc2 optimized slicing test module.
-
-    Tests slice read operations for the cases where Blosc2 optimized slicing
-    can be used.
+Tests slice read operations for the cases where Blosc2 optimized slicing can
+be used.
 """
 
 import os
@@ -38,10 +36,7 @@ class StoreArrayMixin:
 
 @ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
-
-    """
-        Feature: Blosc2 optimized slicing
-    """
+    """Blosc2 optimized slicing"""
 
     blosc2_force_filter = False
 
@@ -131,20 +126,14 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
 @ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2FiltSlicingTestCase(Blosc2OptSlicingTestCase):
-
-    """
-        Feature: Blosc2 filter slicing
-    """
+    """Blosc2 filter slicing"""
 
     blosc2_force_filter = True
 
 
 @ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
-
-    """
-        Feature: Blosc2 optimized slicing with chunks on inner dimension
-    """
+    """Blosc2 optimized slicing with chunks on inner dimension"""
 
     # Minimal test which can be figured out manually::
     #
@@ -179,10 +168,7 @@ class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
 
 @ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
-
-    """
-        Feature: Blosc2 optimized slicing with compound dtypes
-    """
+    """Blosc2 optimized slicing with compound dtypes"""
 
     def setUp(self):
         TestCase.setUp(self)
