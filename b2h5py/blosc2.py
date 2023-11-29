@@ -13,14 +13,17 @@ If a dataset is adapted for Blosc2 optimized slicing, you may just use
 `opt_slice_read()`, which takes care of the checks.
 """
 
+import functools
 import os
 import platform
 
+import h5py
 import hdf5plugin
 import numpy
 
 from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
+from h5py._hl.base import cached_property as h5cached_property, phil as h5phil
 
 
 class NoOptSlicingError(TypeError):
@@ -172,3 +175,47 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
             "Selection is not suitable for Blosc2 optimized slicing")
 
     return opt_selection_read(dataset, selection, new_dtype)
+
+
+# ``B2Dataset_*`` functions will be monkey-patched
+# into the ``h5py.Dataset`` class.
+
+@h5cached_property
+def B2Dataset__blosc2_opt_slicing_ok(self):
+    """Is this dataset suitable for Blosc2 optimized slicing"""
+    return (
+        self._extent_type == h5py.h5s.SIMPLE
+        and opt_slicing_dataset_ok(self)
+    )
+
+
+def B2Dataset___getitem__(self, args, new_dtype=None):
+    args = args if isinstance(args, tuple) else (args,)
+
+    with h5phil:
+        try:
+            return opt_slice_read(self, args, new_dtype)
+        except NoOptSlicingError:
+            pass  # No Blosc2 optimized slicing, try other approaches
+
+    return self._h5py__getitem__(args, new_dtype)
+
+functools.update_wrapper(B2Dataset___getitem__, h5py.Dataset.__getitem__)
+
+
+def patch_dataset_class():  # TODO: doc
+    if hasattr(h5py.Dataset, '_h5py__getitem__'):
+        return  # already patched
+
+    h5py.Dataset._h5py__getitem__ = h5py.Dataset.__getitem__
+    h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
+    h5py.Dataset.__getitem__ = B2Dataset___getitem__
+
+
+def unpatch_dataset_class():  # TODO: doc
+    if not hasattr(h5py.Dataset, '_h5py__getitem__'):
+        return  # not patched
+
+    h5py.Dataset.__getitem__ = h5py.Dataset._h5py__getitem__
+    del h5py.Dataset._h5py__getitem__
+    del h5py.Dataset._blosc2_opt_slicing_ok
