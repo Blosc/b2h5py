@@ -56,21 +56,17 @@ with h5py.File(file_name, 'w') as f:
     # for a newly created dataset.
     # For the moment, all writes to Blosc2-compressed datasets
     # use the HDF5 filter pipeline, so only hdf5plugin is needed.
-    # If Python-Blosc2 is not available on your system,
-    # importing hdf5plugin is enough to store your data.
     import hdf5plugin as h5p
     comp = h5p.Blosc2(cname='lz4', clevel=5, filters=h5p.Blosc2.SHUFFLE)
     dataset = f.create_dataset(dataset_name, data=data, **comp)
 
 # Benefitting from Blosc2 optimized slicing
 # -----------------------------------------
-# Support for Blosc2 optimized slicing
-# depends on *both* Python-Blosc2 and hdf5plugin.
-# If they are available, the feature is enabled by default
-# unless disabled via the `BLOSC2_FILTER` environment variable.
 with h5py.File(file_name, 'r') as f:
-    # If support for Blosc2 optimized slicing is available,
-    # there is no need to import anything else explicitly for reading.
+    # After importing `b2h5py`,
+    # support for Blosc2 optimized slicing is enabled by default,
+    # unless disabled via the `BLOSC2_FILTER` environment variable.
+    import b2h5py
     # One just uses slicing as usual.
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
@@ -90,12 +86,10 @@ with h5py.File(file_name, 'r') as f:
 print("Disabling Blosc2 optimized slicing via the environment.")
 os.environ['BLOSC2_FILTER'] = '1'
 with h5py.File(file_name, 'r') as f:
-    # If support for Blosc2 optimized slicing is available,
-    # there is no need to import anything else explicitly for reading.
-    # However, if Python-Blosc2 is not available on your system,
-    # you need to import hdf5plugin to access Blosc2-compressed data
-    # (without optimizations).
-    import hdf5plugin
+    # When Blosc2 optimized slicing is disabled,
+    # the HDF5 filter pipeline is used instead.
+    # Importing `b2h5py` already enables the Blosc2 filter using hdf5plugin.
+    import b2h5py
     dataset = f[dataset_name]
     slice_ = dataset[150:, 150:]
     print("Slice from dataset:", slice_, sep='\n')
