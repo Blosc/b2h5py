@@ -198,24 +198,23 @@ def B2Dataset___getitem__(self, args, new_dtype=None):
         except NoOptSlicingError:
             pass  # No Blosc2 optimized slicing, try other approaches
 
-    return self._h5py__getitem__(args, new_dtype)
+    # ``__wrapped__`` is set by ``functools.update_wrapper()`` below.
+    return B2Dataset___getitem__.__wrapped__(self, args, new_dtype)
 
 functools.update_wrapper(B2Dataset___getitem__, h5py.Dataset.__getitem__)
 
 
 def patch_dataset_class():  # TODO: doc
-    if hasattr(h5py.Dataset, '_h5py__getitem__'):
+    if hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok'):
         return  # already patched
 
-    h5py.Dataset._h5py__getitem__ = h5py.Dataset.__getitem__
     h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
     h5py.Dataset.__getitem__ = B2Dataset___getitem__
 
 
 def unpatch_dataset_class():  # TODO: doc
-    if not hasattr(h5py.Dataset, '_h5py__getitem__'):
+    if not hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok'):
         return  # not patched
 
-    h5py.Dataset.__getitem__ = h5py.Dataset._h5py__getitem__
-    del h5py.Dataset._h5py__getitem__
+    h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
     del h5py.Dataset._blosc2_opt_slicing_ok
