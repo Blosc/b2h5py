@@ -16,30 +16,11 @@ If a dataset is adapted for Blosc2 optimized slicing, you may just use
 import os
 import platform
 
+import hdf5plugin
 import numpy
 
-try:
-    # We only want to automatically enable
-    # both optimized and filter-based slicing
-    # if both Python-Blosc2 and hdf5plugin are available.
-    #
-    # If only Python-Blosc2 is available,
-    # enabling optimized slicing only would be quite confusing
-    # as some slice operations would work while others would fail.
-    # If only hdf5plugin is available,
-    # enabling filter-based slicing only would enable all the plugins
-    # without the user's knowledge, just because the package is available.
-    #
-    # In other words, the user needs to import hdf5plugin explicitly
-    # to read Blosc2-compressed data in the absence of Python-Blosc2.
-    #
-    # This means that the order of imports is relevant here.
-    from blosc2.schunk import open as blosc2_schunk_open
-    import hdf5plugin
-except ImportError:
-    blosc2_schunk_open = None
-
-from . import selections as sel
+from blosc2.schunk import open as b2schunk_open
+from h5py._hl import selections as h5sel
 
 
 class NoOptSlicingError(TypeError):
@@ -50,7 +31,7 @@ class NoOptSlicingError(TypeError):
 def opt_slicing_selection_ok(selection):
     """Is the given selection suitable for Blosc2 optimized slicing?"""
     return (
-        isinstance(selection, sel.SimpleSelection)
+        isinstance(selection, h5sel.SimpleSelection)
         and numpy.prod(selection._sel[2]) == 1  # all steps equal 1
     )
 
@@ -75,12 +56,9 @@ def opt_slicing_dataset_ok(dataset):
 def opt_slicing_enabled():
     """Is Blosc2 optimized slicing not disabled via the environment?
 
-    This returns false if Blosc2 is not usable or if the BLOSC2_FILTER
-    environment variable is set to a non-zero integer (which forces the use of
-    the HDF5 filter pipeline).
+    This returns false if the BLOSC2_FILTER environment variable is set to a
+    non-zero integer (which forces the use of the HDF5 filter pipeline).
     """
-    if blosc2_schunk_open is None:
-        return False
     try:
         force_filter = int(os.environ.get('BLOSC2_FILTER', '0'), 10)
     except ValueError:
@@ -89,7 +67,7 @@ def opt_slicing_enabled():
 
 
 def _read_chunk_slice(path, offset, slice_, dtype):
-    schunk = blosc2_schunk_open(path, mode='r', offset=offset)
+    schunk = b2schunk_open(path, mode='r', offset=offset)
     s = schunk[slice_]
     if s.dtype.kind != 'V':
         return s
@@ -188,7 +166,7 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
         raise NoOptSlicingError(
             "Blosc2 optimized slicing is unavailable or disabled")
 
-    selection = sel.select(dataset.shape, slice_, dataset=dataset)
+    selection = h5sel.select(dataset.shape, slice_, dataset=dataset)
     if not opt_slicing_selection_ok(selection):
         raise NoOptSlicingError(
             "Selection is not suitable for Blosc2 optimized slicing")
