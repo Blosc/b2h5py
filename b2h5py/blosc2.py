@@ -101,9 +101,9 @@ def opt_selection_read(dataset, selection, new_dtype=None):
     # TODO: consider using 'dataset.id.get_chunk_info' for performance
     get_chunk_info = dataset.id.get_chunk_info_by_coord
     for chunk_slice in dataset.iter_chunks(slice_):
-        # TODO: Remove when #2341 is fixed.
+        # TODO: Remove when h5py#2341 is fixed.
         if any(s.stop <= s.start for s in chunk_slice):
-            continue  # bogus iter_chunks item, see #2341
+            continue  # bogus iter_chunks item, see h5py#2341
 
         # Compute different parameters for the slice/chunk combination.
         (
