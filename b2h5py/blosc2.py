@@ -202,8 +202,12 @@ def B2Dataset___getitem__(self, args, new_dtype=None):
     return B2Dataset___getitem__.__wrapped__(self, args, new_dtype)
 
 
+def is_dataset_class_patched():  # TODO: doc
+    return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
+
+
 def patch_dataset_class():  # TODO: doc
-    if hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok'):
+    if is_dataset_class_patched():
         return  # already patched
 
     h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
@@ -215,7 +219,7 @@ def patch_dataset_class():  # TODO: doc
 
 
 def unpatch_dataset_class():  # TODO: doc
-    if not hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok'):
+    if not is_dataset_class_patched():
         return  # not patched
 
     h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
