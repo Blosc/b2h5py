@@ -7,16 +7,12 @@ be used.
 import os
 import random
 
-try:
-    import blosc2 as b2
-    import hdf5plugin as h5p
-except ImportError:
-    b2 = h5p = None
+import b2h5py  # monkey-patches h5py.Dataset
+import hdf5plugin as h5p
 import numpy as np
 
-from .common import ut, TestCase
-
 from h5py import File
+from h5py.tests.common import TestCase
 
 
 class StoreArrayMixin:
@@ -34,7 +30,6 @@ class StoreArrayMixin:
         self.dset = self.f['x']
 
 
-@ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
     """Blosc2 optimized slicing"""
 
@@ -124,14 +119,12 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
         self.assertArrayEqual(alt_dset[slc], alt_arr[slc])
 
 
-@ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2FiltSlicingTestCase(Blosc2OptSlicingTestCase):
     """Blosc2 filter slicing"""
 
     blosc2_force_filter = True
 
 
-@ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
     """Blosc2 optimized slicing with chunks on inner dimension"""
 
@@ -166,7 +159,6 @@ class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
 
-@ut.skipIf(b2 is None or h5p is None, 'Blosc2 support is required')
 class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
     """Blosc2 optimized slicing with compound dtypes"""
 
