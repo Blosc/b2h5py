@@ -125,6 +125,18 @@ class Blosc2FiltSlicingTestCase(Blosc2OptSlicingTestCase):
     blosc2_force_filter = True
 
 
+class Blosc2UnpatchTestCase(Blosc2OptSlicingTestCase):
+    """Blosc2 filter slicing (original h5py) by unpatching dataset class"""
+
+    def setUp(self):
+        super().setUp()
+        b2h5py.unpatch_dataset_class()
+
+    def tearDown(self):
+        b2h5py.patch_dataset_class()
+        super().tearDown()
+
+
 class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
     """Blosc2 optimized slicing with chunks on inner dimension"""
 
