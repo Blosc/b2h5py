@@ -203,11 +203,21 @@ def B2Dataset___getitem__(self, args, new_dtype=None):
     return B2Dataset___getitem__.__wrapped__(self, args, new_dtype)
 
 
-def is_dataset_class_patched():  # TODO: doc
+def is_dataset_class_patched():
+    """Return whether ``h5py.Dataset`` is already patched for Blosc2
+    optimizations.
+    """
     return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
 
 
-def patch_dataset_class():  # TODO: doc
+def patch_dataset_class():
+    """Patch ``h5py.Dataset`` to support Blosc2 optimizations.
+
+    This has no effect if the class has already been patched for this purpose.
+
+    This supports patching the class if it has already been patched by other
+    code for other purposes.
+    """
     if is_dataset_class_patched():
         return  # already patched
 
@@ -219,7 +229,12 @@ def patch_dataset_class():  # TODO: doc
     h5py.Dataset.__getitem__ = B2Dataset___getitem__
 
 
-def unpatch_dataset_class():  # TODO: doc
+def unpatch_dataset_class():
+    """Undo the patching of ``h5py.Dataset`` to remove support for Blosc2
+    optimizations.
+
+    This has no effect if the class has not been patched for this purpose.
+    """
     if not is_dataset_class_patched():
         return  # not patched
 
