@@ -6,11 +6,12 @@ must be enabled globally (`opt_slicing_enabled()`), (ii) the dataset must be
 amenable to it (`opt_slicing_dataset_ok()`), and (iii) the selection must be
 amenable to it (`opt_slicing_selection_ok()`).
 
-If you have checked these conditions manually, you may use
-`opt_selection_read()`.
+If these conditions have already been checked for a given dataset,
+`opt_selection_read()` may be used.
 
-If a dataset is adapted for Blosc2 optimized slicing, you may just use
-`opt_slice_read()`, which takes care of the checks.
+If a dataset is adapted for Blosc2 optimized slicing (e.g. by having its class
+monkey-patched), `opt_slice_read()` shoud suffice, as it takes care of the
+checks.
 """
 
 import functools
