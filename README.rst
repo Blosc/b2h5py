@@ -6,7 +6,9 @@ b2h5py
 .. _h5py: https://www.h5py.org/
 .. _Blosc2: https://www.blosc.org/
 
-(A similar technique in PyTables yields 3x-5x speed-ups compared with normal filter-based access, see `Optimized Hyper-slicing in PyTables with Blosc2 NDim`_.)
+Benchmarks of this technique show 2x-5x speed-ups compared with normal filter-based access. Comparable results are obtained with a similar technique in PyTables, see `Optimized Hyper-slicing in PyTables with Blosc2 NDim`_.
+
+.. image:: doc/benchmark.png
 
 .. _Optimized Hyper-slicing in PyTables with Blosc2 NDim: https://www.blosc.org/posts/pytables-b2nd-slicing/
 
