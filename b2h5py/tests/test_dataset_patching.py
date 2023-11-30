@@ -71,3 +71,18 @@ class Blosc2DatasetPatching(TestCase):
         finally:
             b2h5py.unpatch_dataset_class()
             Dataset.__getitem__ = foreign_getitem.__wrapped__
+
+    def test_unpatch_foreign(self):
+        """Unpatching when patched over by someone else"""
+
+        @functools.wraps(Dataset.__getitem__)
+        def foreign_getitem(self, args, new_dtype=None):
+            return 42
+
+        Dataset.__getitem__ = foreign_getitem
+
+        try:
+            with self.assertRaises(ValueError):
+                b2h5py.unpatch_dataset_class()
+        finally:
+            Dataset.__getitem__ = foreign_getitem.__wrapped__

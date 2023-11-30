@@ -234,9 +234,18 @@ def unpatch_dataset_class():
     optimizations.
 
     This has no effect if the class has not been patched for this purpose.
+
+    Raises `ValueError` if the operations patched by this code were already
+    patched over by some other code.  In this case, the latter patch must be
+    removed first (if the other code supports it).
     """
     if not is_dataset_class_patched():
         return  # not patched
 
+    if h5py.Dataset.__getitem__ is not B2Dataset___getitem__:
+        # To support this, we would need to
+        # go down the chain of ``__wrapped__`` attributes
+        # and alter them in place, which feels quite dangerous.
+        raise ValueError("dataset class was patched over by someone else")
     h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
     del h5py.Dataset._blosc2_opt_slicing_ok
