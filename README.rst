@@ -23,6 +23,16 @@ After that, optimization will be attempted for any slicing of a dataset (of the 
 
 Even if the module is imported and the ``Dataset`` class is patched, you may still force-disable the optimization by setting ``BLOSC2_FILTER=1`` in the environment.
 
+Building
+--------
+
+Just install PyPA build (e.g. ``pip install build``), enter the source code directory and run ``pyproject-build`` to get a source tarball and a wheel under the ``dist`` directory.
+
+Installing
+----------
+
+Either install the wheel from the previous section, or enter the source code directory and run ``pip install .``. There are no published wheels yet.
+
 Running tests
 -------------
 
