@@ -19,3 +19,10 @@ After that, optimization will be attempted for any slicing of a dataset (of the 
 .. _hdf5plugin: https://github.com/silx-kit/hdf5plugin
 
 Even if the module is imported and the ``Dataset`` class is patched, you may still force-disable the optimization by setting ``BLOSC2_FILTER=1`` in the environment.
+
+Running tests
+-------------
+
+If you have installed ``b2h5py``, just run ``python -m unittest discover b2h5py.tests``.
+
+Otherwise, just enter its source code directory and run ``python -m unittest``.
