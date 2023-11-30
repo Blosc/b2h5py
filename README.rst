@@ -10,6 +10,9 @@ b2h5py
 
 .. _Optimized Hyper-slicing in PyTables with Blosc2 NDim: https://www.blosc.org/posts/pytables-b2nd-slicing/
 
+Usage
+-----
+
 This optimized access works for slices with step 1 on Blosc2-compressed datasets using the native byte order. It is enabled by monkey-patching the ``h5py.Dataset`` class to extend the slicing operation. This is done on module import, so the only thing you need to do is::
 
     import b2h5py
