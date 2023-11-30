@@ -33,7 +33,9 @@ Just install PyPA build (e.g. ``pip install build``), enter the source code dire
 Installing
 ----------
 
-Either install the wheel from the previous section, or enter the source code directory and run ``pip install .`` from there. There are no published wheels yet.
+To install as a wheel from PyPI, run ``pip install b2h5py``.
+
+You may also install the wheel that you built in the previous section, or enter the source code directory and run ``pip install .`` from there.
 
 Running tests
 -------------
