@@ -5,7 +5,7 @@ keywords = [ "h5py", "HDF5", "Blosc2" ]
 readme = "README.rst"
 license = { file = "LICENSE" }
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Science/Research",
@@ -20,7 +20,7 @@ classifiers = [
 authors = [
     { name = "Ivan Vilata-i-Balaguer", email = "ivan@selidor.net" },
 ]
-version = "0.1.0.dev0"
+version = "0.1.0"
 requires-python = ">= 3.2"  # functools wrapping
 dependencies = [
     "blosc2 >= 2.3.0",  # open schunk by offset
