@@ -5,6 +5,7 @@ be used.
 """
 
 import os
+import functools
 import random
 
 import b2h5py  # monkey-patches h5py.Dataset
@@ -13,6 +14,11 @@ import numpy as np
 
 from h5py import File
 from h5py.tests.common import TestCase
+
+
+class Blosc2OptNotUsedError(Exception):
+    """Blosc2 optimization was not used by unit test"""
+    pass
 
 
 class StoreArrayMixin:
@@ -28,6 +34,22 @@ class StoreArrayMixin:
         self.f.close()
         self.f = File(fn, 'r')
         self.dset = self.f['x']
+
+
+def check_opt_slicing(test):
+    """Decorate `test` to fail if slicing did not use expected optimization"""
+    @functools.wraps(test)
+    def checked_test(self):
+        if not self.should_enable_opt():
+            return test(self)
+        # Force an exception if the optimization is not used.
+        orig_exc = b2h5py.blosc2._no_opt_error
+        b2h5py.blosc2._no_opt_error = Blosc2OptNotUsedError
+        try:
+            return test(self)
+        finally:
+            b2h5py.blosc2._no_opt_error = orig_exc
+    return checked_test
 
 
 class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
@@ -49,6 +71,21 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
     def tearDown(self):
         os.environ['BLOSC2_FILTER'] = self.blosc2_filter_env
         super().tearDown()
+
+    def should_enable_opt(self):
+        return not self.blosc2_force_filter
+
+    def test_disabled(self):
+        """Non-use detection working."""
+        if not self.should_enable_opt():
+            return
+
+        @check_opt_slicing
+        def test(self):
+            self.dset[::2]  # step != 1 not supported currently
+
+        with self.assertRaises(Blosc2OptNotUsedError):
+            test(self)
 
     # Test the data of the returned object.
 
@@ -136,6 +173,9 @@ class Blosc2UnpatchTestCase(Blosc2OptSlicingTestCase):
         b2h5py.patch_dataset_class()
         super().tearDown()
 
+    def should_enable_opt(self):
+        return False
+
 
 class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
     """Blosc2 optimized slicing with chunks on inner dimension"""
@@ -165,6 +205,9 @@ class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
         self.arr = np.arange(np.prod(shape), dtype="u1").reshape(shape)
         StoreArrayMixin.setUp(self)
 
+    def should_enable_opt(self):
+        return True
+
     def test_slice(self):
         """ Reading a slice perpendicular to chunks """
         slc = (slice(1, 2), slice(0, 2), slice(0, 2))
@@ -192,6 +235,9 @@ class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
         arr[4, 4] = (9, 9)
         self.arr = arr
         StoreArrayMixin.setUp(self)
+
+    def should_enable_opt(self):
+        return True
 
     def test_whole_array(self):
         """ Reading a slice covering the whole array """
