@@ -32,6 +32,13 @@ class NoOptSlicingError(TypeError):
     pass
 
 
+# For testing whether optimizations are used or not,
+# replace this with a class not derived from `NoOptSlicingError`;
+# it will be raised by slicing operations if optimizations are not used.
+# Remember to restore the original value when you are done.
+_no_opt_error = NoOptSlicingError
+
+
 def opt_slicing_selection_ok(selection):
     """Is the given selection suitable for Blosc2 optimized slicing?"""
     return (
@@ -162,17 +169,21 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
     A NumPy array is returned with the desired slice.  The array will have the
     given new dtype if specified.
     """
+    # In the following checks,
+    # if `_no_opt_error` is not derived from `NoOptSlicingError`
+    # the get item operation shall not be able to catch the exception.
+
     if not dataset._blosc2_opt_slicing_ok:
-        raise NoOptSlicingError(
+        raise _no_opt_error(
             "Dataset is not suitable for Blosc2 optimized slicing")
 
     if not opt_slicing_enabled():
-        raise NoOptSlicingError(
+        raise _no_opt_error(
             "Blosc2 optimized slicing is unavailable or disabled")
 
     selection = h5sel.select(dataset.shape, slice_, dataset=dataset)
     if not opt_slicing_selection_ok(selection):
-        raise NoOptSlicingError(
+        raise _no_opt_error(
             "Selection is not suitable for Blosc2 optimized slicing")
 
     return opt_selection_read(dataset, selection, new_dtype)
