@@ -91,31 +91,31 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_whole_array(self):
-        """ Reading a slice covering the whole array """
+        """Reading a slice covering the whole array"""
         self.assertArrayEqual(self.dset[:], self.arr)
 
     @check_opt_slicing
     def test_cross_chunk_1dim(self):
-        """ Reading a slice crossing chunk boundaries (1-dim) """
+        """Reading a slice crossing chunk boundaries (1-dim)"""
         slc = slice(self.dset.chunks[0] - 5, self.dset.chunks[0] + 5)
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
     @check_opt_slicing
     def test_cross_chunk_ndim(self):
-        """ Reading a slice crossing chunk boundaries (n-dim) """
+        """Reading a slice crossing chunk boundaries (n-dim)"""
         slc = (slice(self.dset.chunks[0] - 5, self.dset.chunks[0] + 5),
                slice(self.dset.chunks[1] - 5, self.dset.chunks[1] + 5))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
     @check_opt_slicing
     def test_last_chunk_1dim(self):
-        """ Reading a slice going past the last chunk (1-dim) """
+        """Reading a slice going past the last chunk (1-dim)"""
         slc = slice(self.dset.shape[0] - 5, self.dset.shape[0] + 5)
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
     @check_opt_slicing
     def test_last_chunk_ndim(self):
-        """ Reading a slice going past the last chunk (n-dim) """
+        """Reading a slice going past the last chunk (n-dim)"""
         slc = (slice(self.dset.shape[0] - 5, self.dset.shape[0] + 5),
                slice(self.dset.shape[1] - 5, self.dset.shape[1] + 5))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
@@ -124,13 +124,13 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_scalar_inside(self):
-        """ Reading a scalar inside of the array """
+        """Reading a scalar inside of the array"""
         coord = tuple(random.randrange(0, c) for c in self.dset.shape)
         self.assertEqual(self.dset[coord], self.arr[coord])
 
     @check_opt_slicing
     def test_scalar_outside(self):
-        """ Reading a scalar outside of the array """
+        """Reading a scalar outside of the array"""
         shape = self.dset.shape
         coords = [(shape[0] * 2, 0), (0, shape[1] * 2),
                   tuple(c * 2 for c in shape)]
@@ -140,7 +140,7 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_slice_outside(self):
-        """ Reading a slice outside of the array (empty) """
+        """Reading a slice outside of the array (empty)"""
         shape = self.dset.shape
         slcs = [(slice(shape[0] * 2, shape[0] * 3), ...),
                 (..., slice(shape[1] * 2, shape[1] * 3)),
@@ -150,14 +150,14 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_slice_1dimless(self):
-        """ Reading a slice with one dimension less than the array """
+        """Reading a slice with one dimension less than the array"""
         idxs = [random.randrange(0, dim) for dim in self.dset.shape]
         for idx in idxs:
             self.assertArrayEqual(self.dset[idx], self.arr[idx])
 
     @check_opt_slicing
     def test_astype(self):
-        """ Reading a slice converted to another type """
+        """Reading a slice converted to another type"""
         alt_dtype = np.dtype('u4')
         self.assertTrue(self.dset.dtype < alt_dtype)
         alt_arr = self.arr.astype(alt_dtype)
@@ -220,7 +220,7 @@ class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_slice(self):
-        """ Reading a slice perpendicular to chunks """
+        """Reading a slice perpendicular to chunks"""
         slc = (slice(1, 2), slice(0, 2), slice(0, 2))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
@@ -252,12 +252,12 @@ class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_whole_array(self):
-        """ Reading a slice covering the whole array """
+        """Reading a slice covering the whole array"""
         self.assertArrayEqual(self.dset[:], self.arr)
 
     @check_opt_slicing
     def test_chunk(self):
-        """ Reading a slice matching a chunk """
+        """Reading a slice matching a chunk"""
         slcs = [tuple(slice(mult * cl, (mult + 1) * cl)
                       for cl in self.dset.chunks)
                 for mult in range(3)]
@@ -266,20 +266,20 @@ class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_cross_chunk(self):
-        """ Reading a slice crossing chunk boundaries """
+        """Reading a slice crossing chunk boundaries"""
         slc = (slice(1, 1), slice(3, 3))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
     @check_opt_slicing
     def test_last_chunk(self):
-        """ Reading a slice going past the last chunk """
+        """Reading a slice going past the last chunk"""
         slc = (slice(-1, self.dset.shape[0] + 10),
                slice(-1, self.dset.shape[1] + 10))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
 
     @check_opt_slicing
     def test_cross_last_chunk(self):
-        """ Reading a slice crossing chunk boundaries past last chunk """
+        """Reading a slice crossing chunk boundaries past last chunk"""
         slc = (slice(-2, self.dset.shape[0] + 10),
                slice(-2, self.dset.shape[1] + 10))
         self.assertArrayEqual(self.dset[slc], self.arr[slc])
