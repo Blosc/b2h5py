@@ -11,7 +11,7 @@ from h5py import Dataset
 from h5py.tests.common import TestCase
 
 
-class Blosc2DatasetPatching(TestCase):
+class Blosc2DatasetPatchingTestCase(TestCase):
     def setUp(self):
         super().setUp()
         b2h5py.patch_dataset_class()
