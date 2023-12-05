@@ -94,3 +94,4 @@ with h5py.File(file_name, 'r') as f:
     slice_ = dataset[150:, 150:]
     print("Slice from dataset:", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
+os.environ['BLOSC2_FILTER'] = '0'  # back to normal
