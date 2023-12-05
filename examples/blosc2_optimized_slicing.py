@@ -95,3 +95,14 @@ with h5py.File(file_name, 'r') as f:
     print("Slice from dataset:", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
 os.environ['BLOSC2_FILTER'] = '0'  # back to normal
+# Utility functions are also provided to enable and disable optimization
+# (`BLOSC2_FILTER` still takes priority, though).
+print("Disabling Blosc2 optimized slicing via API.")
+with h5py.File(file_name, 'r') as f:
+    import b2h5py
+    b2h5py.unpatch_dataset_class()
+    dataset = f[dataset_name]
+    slice_ = dataset[150:, 150:]
+    print("Slice from dataset:", slice_, sep='\n')
+    print("Slice from input array:", data[150:, 150:], sep='\n')
+    b2h5py.patch_dataset_class()  # back to normal
