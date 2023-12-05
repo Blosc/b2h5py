@@ -1,0 +1,26 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Create distribution files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - name: Build files
+        run: |
+          python -m pip install build
+          pyproject-build
+      - name: Upload files
+        uses: actions/upload-artifact@v3
+        with:
+          name: b2h5py-dist
+          path: |
+            dist/b2h5py-*.tar.gz
+            dist/b2h5py-*.whl
