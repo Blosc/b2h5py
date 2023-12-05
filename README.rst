@@ -43,3 +43,5 @@ Running tests
 If you have installed ``b2h5py``, just run ``python -m unittest discover b2h5py.tests``.
 
 Otherwise, just enter its source code directory and run ``python -m unittest``.
+
+You can also run the h5py tests with the patched ``Dataset`` class to check that patching does not break anything. You may install the ``h5py-test`` extra (e.g. ``pip install b2h5py[h5py-test]`` and run ``python -m b2h5py.tests.test_patched_h5py``.

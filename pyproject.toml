@@ -32,3 +32,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/Blosc/b2h5py"
 Issues = "https://github.com/Blosc/b2h5py/issues"
+
+[project.optional-dependencies]
+h5py-test = [
+    # "h5py[test]",  # no such extra in h5py
+    "pytest",  # to run h5py tests
+]
