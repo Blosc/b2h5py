@@ -265,6 +265,13 @@ def unpatch_dataset_class():
 
 @contextlib.contextmanager
 def patching_dataset_class():
+    """Get a context manager to patch ``h5py.Dataset`` temporarily.
+
+    If the class was already patched when the context manager is entered, it
+    remains patched on exit.  Otherwise, it is unpatched.
+
+    Note: this change is applied globally while the context manager is active.
+    """
     already_patched = is_dataset_class_patched()
 
     if already_patched:  # do nothing
