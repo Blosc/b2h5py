@@ -14,6 +14,7 @@ You may force-disable the optimization at any time by setting
 
 from .blosc2 import (is_dataset_class_patched,
                      patch_dataset_class,
+                     patching_dataset_class,
                      unpatch_dataset_class)
 
 

@@ -14,6 +14,7 @@ monkey-patched), `opt_slice_read()` shoud suffice, as it takes care of the
 checks.
 """
 
+import contextlib
 import functools
 import os
 import platform
@@ -260,3 +261,18 @@ def unpatch_dataset_class():
         raise ValueError("dataset class was patched over by someone else")
     h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
     del h5py.Dataset._blosc2_opt_slicing_ok
+
+
+@contextlib.contextmanager
+def patching_dataset_class():
+    already_patched = is_dataset_class_patched()
+
+    if already_patched:  # do nothing
+        yield None
+        return
+
+    patch_dataset_class()
+    try:
+        yield None
+    finally:
+        unpatch_dataset_class()
