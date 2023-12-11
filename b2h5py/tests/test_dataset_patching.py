@@ -86,3 +86,59 @@ class Blosc2DatasetPatchingTestCase(TestCase):
                 b2h5py.unpatch_dataset_class()
         finally:
             Dataset.__getitem__ = foreign_getitem.__wrapped__
+
+
+class CMTestError(Exception):
+    pass
+
+
+class ContextManagerTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        b2h5py.unpatch_dataset_class()
+
+    def tearDown(self):
+        b2h5py.patch_dataset_class()
+        super().tearDown()
+
+    def test_default(self):
+        """Dataset class is patched then unpatched"""
+        self.assertFalse(b2h5py.is_dataset_class_patched())
+        with b2h5py.patching_dataset_class():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_dataset_class_patched())
+
+    def test_with_exception(self):
+        """Dataset class is patched then unpatched in spite of exceptions"""
+        self.assertFalse(b2h5py.is_dataset_class_patched())
+        try:
+            with b2h5py.patching_dataset_class():
+                self.assertTrue(b2h5py.is_dataset_class_patched())
+                raise CMTestError
+        except CMTestError:
+            pass
+        self.assertFalse(b2h5py.is_dataset_class_patched())
+
+    def test_exception(self):
+        """Exceptions are propagated"""
+        with self.assertRaises(CMTestError):
+            with b2h5py.patching_dataset_class():
+                raise CMTestError
+
+    def test_already_patched(self):
+        """Not unpatching if already patched before entry"""
+        b2h5py.patch_dataset_class()
+        self.assertTrue(b2h5py.is_dataset_class_patched())
+        with b2h5py.patching_dataset_class():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertTrue(b2h5py.is_dataset_class_patched())
+
+    def test_nested(self):
+        """Nesting patching context managers"""
+        self.assertFalse(b2h5py.is_dataset_class_patched())
+        with b2h5py.patching_dataset_class():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+            with b2h5py.patching_dataset_class():
+                self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_dataset_class_patched())
