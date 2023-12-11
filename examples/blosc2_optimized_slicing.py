@@ -49,6 +49,10 @@ data = np.arange(np.prod(shape)).reshape(shape)
 file_name = 'b2nd-example.h5'
 dataset_name = 'data'
 
+
+def printl(*args, **kwargs):
+    print(*args, **kwargs, sep='\n')
+
 # Creating a Blosc2-compressed dataset
 # ------------------------------------
 with h5py.File(file_name, 'w') as f:
@@ -71,15 +75,13 @@ with h5py.File(file_name, 'r') as f:
     # One just uses slicing as usual.
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
-    print("Contiguous slice from dataset (optimized):", dataset[150:, 150:],
-          sep='\n')
-    print("Contiguous slice from input array:", data[150:, 150:], sep='\n')
+    printl("Contiguous slice from dataset (optimized):", dataset[150:, 150:])
+    printl("Contiguous slice from input array:", data[150:, 150:])
     # Slices with step != 1 (or with datasets of a foreign endianness)
     # are not optimized, but still work
     # (via the HDF5 filter pipeline and hdf5plugin).
-    print("Sparse slice from dataset (filter):", dataset[150::2, 150::2],
-          sep='\n')
-    print("Sparse slice from input array:", data[150::2, 150::2], sep='\n')
+    printl("Sparse slice from dataset (filter):", dataset[150::2, 150::2])
+    printl("Sparse slice from input array:", data[150::2, 150::2])
     print()
 
 # Disabling Blosc2 optimized slicing
@@ -92,8 +94,8 @@ with h5py.File(file_name, 'r') as f:
     b2h5py.unpatch_dataset_class()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
-    print("Slice from dataset (filter):", dataset[150:, 150:], sep='\n')
-    print("Slice from input array:", data[150:, 150:], sep='\n')
+    printl("Slice from dataset (filter):", dataset[150:, 150:])
+    printl("Slice from input array:", data[150:, 150:])
     b2h5py.patch_dataset_class()  # back to normal
     assert(b2h5py.is_dataset_class_patched())
     print()
@@ -108,11 +110,10 @@ with h5py.File(file_name, 'r') as f:
     b2h5py.unpatch_dataset_class()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
-    print("Slice from dataset (filter):", dataset[150:, 150:], sep='\n')
+    printl("Slice from dataset (filter):", dataset[150:, 150:])
     with b2h5py.patching_dataset_class():
         assert(b2h5py.is_dataset_class_patched())
-        print("Slice from dataset (optimized):", dataset[150:, 150:],
-              sep='\n')
+        printl("Slice from dataset (optimized):", dataset[150:, 150:])
     assert(not b2h5py.is_dataset_class_patched())
-    print("Slice from input array:", data[150:, 150:], sep='\n')
+    printl("Slice from input array:", data[150:, 150:])
     print()
