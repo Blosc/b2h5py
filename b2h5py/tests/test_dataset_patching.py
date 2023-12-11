@@ -106,10 +106,18 @@ class ContextManagerTestCase(TestCase):
         b2h5py.patch_dataset_class()
         super().tearDown()
 
-    @property
-    def error_cmgr(self):
-        return (self.assertRaises(CMTestError) if self.shall_raise
-                else contextlib.nullcontext())
+    def patching_cmgr(self):
+        """Checks for error if `self.shall_raise`, patches dataset class"""
+        test_case = self
+
+        class CMTestContextManager(contextlib.ExitStack):
+            def __enter__(self):
+                if test_case.shall_raise:
+                    self.enter_context(test_case.assertRaises(CMTestError))
+                self.enter_context(b2h5py.patching_dataset_class())
+                return super().__enter__()
+
+        return CMTestContextManager()
 
     def maybe_raise(self):
         if self.shall_raise:
@@ -118,14 +126,14 @@ class ContextManagerTestCase(TestCase):
     def test_default(self):
         """Dataset class is patched then unpatched"""
         self.assertFalse(b2h5py.is_dataset_class_patched())
-        with self.error_cmgr:
-            with b2h5py.patching_dataset_class():
-                self.assertTrue(b2h5py.is_dataset_class_patched())
-                self.maybe_raise()
+        with self.patching_cmgr():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.maybe_raise()
         self.assertFalse(b2h5py.is_dataset_class_patched())
 
     def test_exception(self):
         """Exceptions are propagated"""
+        # This test always raises, do not use `self.patching_cmgr()`.
         with self.assertRaises(CMTestError):
             with b2h5py.patching_dataset_class():
                 raise CMTestError
@@ -134,24 +142,21 @@ class ContextManagerTestCase(TestCase):
         """Not unpatching if already patched before entry"""
         b2h5py.patch_dataset_class()
         self.assertTrue(b2h5py.is_dataset_class_patched())
-        with self.error_cmgr:
-            with b2h5py.patching_dataset_class():
-                self.assertTrue(b2h5py.is_dataset_class_patched())
-                self.maybe_raise()
+        with self.patching_cmgr():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.maybe_raise()
         self.assertTrue(b2h5py.is_dataset_class_patched())
 
     def test_nested(self):
         """Nesting patching context managers"""
         self.assertFalse(b2h5py.is_dataset_class_patched())
-        with self.error_cmgr:
-            with b2h5py.patching_dataset_class():
-                self.assertTrue(b2h5py.is_dataset_class_patched())
-                with self.error_cmgr:
-                    with b2h5py.patching_dataset_class():
-                        self.assertTrue(b2h5py.is_dataset_class_patched())
-                        self.maybe_raise()
+        with self.patching_cmgr():
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+            with self.patching_cmgr():
                 self.assertTrue(b2h5py.is_dataset_class_patched())
                 self.maybe_raise()
+            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.maybe_raise()
         self.assertFalse(b2h5py.is_dataset_class_patched())
 
 
