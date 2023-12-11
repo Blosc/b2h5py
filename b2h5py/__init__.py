@@ -10,8 +10,8 @@ They are enabled automatically on module import, by monkey-patching the
 also patch the class temporarily using `patching_dataset_class()` to get a
 context manager.
 
-You may force-disable the optimization at any time by setting
-``BLOSC2_FILTER=1`` in the environment.
+**Note:** For testing and debugging purposes, you may force-disable the
+optimization at any time by setting ``BLOSC2_FILTER=1`` in the environment.
 """
 
 from .blosc2 import (is_dataset_class_patched,

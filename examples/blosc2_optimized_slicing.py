@@ -62,10 +62,9 @@ with h5py.File(file_name, 'w') as f:
 
 # Benefitting from Blosc2 optimized slicing
 # -----------------------------------------
+# After importing `b2h5py`,
+# support for Blosc2 optimized slicing is enabled by default.
 with h5py.File(file_name, 'r') as f:
-    # After importing `b2h5py`,
-    # support for Blosc2 optimized slicing is enabled by default,
-    # unless disabled via the `BLOSC2_FILTER` environment variable.
     import b2h5py
     assert(b2h5py.is_dataset_class_patched())
     # One just uses slicing as usual.
@@ -83,23 +82,8 @@ with h5py.File(file_name, 'r') as f:
 
 # Disabling Blosc2 optimized slicing
 # ----------------------------------
-# Just set the `BLOSC2_FILTER` environment variable to some non-zero integer.
-print("Disabling Blosc2 optimized slicing via the environment.")
-os.environ['BLOSC2_FILTER'] = '1'
-with h5py.File(file_name, 'r') as f:
-    # When Blosc2 optimized slicing is disabled,
-    # the HDF5 filter pipeline is used instead.
-    # Importing `b2h5py` already enables the Blosc2 filter using hdf5plugin.
-    import b2h5py
-    assert(b2h5py.is_dataset_class_patched())
-    dataset = f[dataset_name]
-    slice_ = dataset[150:, 150:]
-    print("Slice from dataset:", slice_, sep='\n')
-    print("Slice from input array:", data[150:, 150:], sep='\n')
-os.environ['BLOSC2_FILTER'] = '0'  # back to normal
-# Utility functions are also provided to enable and disable optimization
-# (`BLOSC2_FILTER` still takes priority, though).
-print("Disabling Blosc2 optimized slicing via API.")
+# Utility functions are provided to enable and disable optimization globally.
+print("Disabling Blosc2 optimized slicing globally.")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     assert(b2h5py.is_dataset_class_patched())
@@ -114,7 +98,7 @@ with h5py.File(file_name, 'r') as f:
 
 # Enabling Blosc2 optimized slicing temporarily
 # ---------------------------------------------
-# If you have disabled optimization via the API,
+# If you have disabled optimization,
 # you may use a context manager to enable it only for a part of your code.
 print("Using Blosc2 optimized slicing temporarily.")
 with h5py.File(file_name, 'r') as f:

@@ -68,8 +68,8 @@ def opt_slicing_dataset_ok(dataset):
 def opt_slicing_enabled():
     """Is Blosc2 optimized slicing not disabled via the environment?
 
-    This returns false if the BLOSC2_FILTER environment variable is set to a
-    non-zero integer (which forces the use of the HDF5 filter pipeline).
+    This returns false if the ``BLOSC2_FILTER`` environment variable is set to
+    a non-zero integer (which forces the use of the HDF5 filter pipeline).
     """
     try:
         force_filter = int(os.environ.get('BLOSC2_FILTER', '0'), 10)
