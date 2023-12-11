@@ -71,14 +71,14 @@ with h5py.File(file_name, 'r') as f:
     # One just uses slicing as usual.
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
-    slice_ = dataset[150:, 150:]
-    print("Contiguous slice from dataset (optimized):", slice_, sep='\n')
+    print("Contiguous slice from dataset (optimized):", dataset[150:, 150:],
+          sep='\n')
     print("Contiguous slice from input array:", data[150:, 150:], sep='\n')
     # Slices with step != 1 (or with datasets of a foreign endianness)
     # are not optimized, but still work
     # (via the HDF5 filter pipeline and hdf5plugin).
-    slice_ = dataset[150::2, 150::2]
-    print("Sparse slice from dataset (filter):", slice_, sep='\n')
+    print("Sparse slice from dataset (filter):", dataset[150::2, 150::2],
+          sep='\n')
     print("Sparse slice from input array:", data[150::2, 150::2], sep='\n')
     print()
 
@@ -92,8 +92,7 @@ with h5py.File(file_name, 'r') as f:
     b2h5py.unpatch_dataset_class()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
-    slice_ = dataset[150:, 150:]
-    print("Slice from dataset (filter):", slice_, sep='\n')
+    print("Slice from dataset (filter):", dataset[150:, 150:], sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
     b2h5py.patch_dataset_class()  # back to normal
     assert(b2h5py.is_dataset_class_patched())
@@ -109,12 +108,11 @@ with h5py.File(file_name, 'r') as f:
     b2h5py.unpatch_dataset_class()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
-    slice_ = dataset[150:, 150:]
-    print("Slice from dataset (filter):", slice_, sep='\n')
+    print("Slice from dataset (filter):", dataset[150:, 150:], sep='\n')
     with b2h5py.patching_dataset_class():
         assert(b2h5py.is_dataset_class_patched())
-        slice_ = dataset[150:, 150:]
-        print("Slice from dataset (optimized):", slice_, sep='\n')
+        print("Slice from dataset (optimized):", dataset[150:, 150:],
+              sep='\n')
     assert(not b2h5py.is_dataset_class_patched())
     print("Slice from input array:", data[150:, 150:], sep='\n')
     print()
