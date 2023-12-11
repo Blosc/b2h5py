@@ -67,6 +67,7 @@ with h5py.File(file_name, 'r') as f:
     # support for Blosc2 optimized slicing is enabled by default,
     # unless disabled via the `BLOSC2_FILTER` environment variable.
     import b2h5py
+    assert(b2h5py.is_dataset_class_patched())
     # One just uses slicing as usual.
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
@@ -90,6 +91,7 @@ with h5py.File(file_name, 'r') as f:
     # the HDF5 filter pipeline is used instead.
     # Importing `b2h5py` already enables the Blosc2 filter using hdf5plugin.
     import b2h5py
+    assert(b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     slice_ = dataset[150:, 150:]
     print("Slice from dataset:", slice_, sep='\n')
@@ -100,12 +102,15 @@ os.environ['BLOSC2_FILTER'] = '0'  # back to normal
 print("Disabling Blosc2 optimized slicing via API.")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
+    assert(b2h5py.is_dataset_class_patched())
     b2h5py.unpatch_dataset_class()
+    assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     slice_ = dataset[150:, 150:]
     print("Slice from dataset:", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
     b2h5py.patch_dataset_class()  # back to normal
+    assert(b2h5py.is_dataset_class_patched())
 
 # Enabling Blosc2 optimized slicing temporarily
 # ---------------------------------------------
@@ -115,10 +120,13 @@ print("Using Blosc2 optimized slicing temporarily.")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     b2h5py.unpatch_dataset_class()
+    assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     slice_filter = dataset[150:, 150:]
     with b2h5py.patching_dataset_class():
+        assert(b2h5py.is_dataset_class_patched())
         slice_opt = dataset[150:, 150:]
+    assert(not b2h5py.is_dataset_class_patched())
     print("Slice from dataset (filter):", slice_, sep='\n')
     print("Slice from dataset (optimized):", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
