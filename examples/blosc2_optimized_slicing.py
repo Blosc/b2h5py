@@ -106,3 +106,19 @@ with h5py.File(file_name, 'r') as f:
     print("Slice from dataset:", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
     b2h5py.patch_dataset_class()  # back to normal
+
+# Enabling Blosc2 optimized slicing temporarily
+# ---------------------------------------------
+# If you have disabled optimization via the API,
+# you may use a context manager to enable it only for a part of your code.
+print("Using Blosc2 optimized slicing temporarily.")
+with h5py.File(file_name, 'r') as f:
+    import b2h5py
+    b2h5py.unpatch_dataset_class()
+    dataset = f[dataset_name]
+    slice_filter = dataset[150:, 150:]
+    with b2h5py.patching_dataset_class():
+        slice_opt = dataset[150:, 150:]
+    print("Slice from dataset (filter):", slice_, sep='\n')
+    print("Slice from dataset (optimized):", slice_, sep='\n')
+    print("Slice from input array:", data[150:, 150:], sep='\n')
