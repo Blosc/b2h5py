@@ -64,6 +64,7 @@ with h5py.File(file_name, 'w') as f:
 # -----------------------------------------
 # After importing `b2h5py`,
 # support for Blosc2 optimized slicing is enabled by default.
+print("# Using Blosc2 optimized slicing")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     assert(b2h5py.is_dataset_class_patched())
@@ -71,19 +72,20 @@ with h5py.File(file_name, 'r') as f:
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
     slice_ = dataset[150:, 150:]
-    print("Contiguous slice from dataset:", slice_, sep='\n')
+    print("Contiguous slice from dataset (optimized):", slice_, sep='\n')
     print("Contiguous slice from input array:", data[150:, 150:], sep='\n')
     # Slices with step != 1 (or with datasets of a foreign endianness)
     # are not optimized, but still work
     # (via the HDF5 filter pipeline and hdf5plugin).
     slice_ = dataset[150::2, 150::2]
-    print("Sparse slice from dataset:", slice_, sep='\n')
+    print("Sparse slice from dataset (filter):", slice_, sep='\n')
     print("Sparse slice from input array:", data[150::2, 150::2], sep='\n')
+    print()
 
 # Disabling Blosc2 optimized slicing
 # ----------------------------------
 # Utility functions are provided to enable and disable optimization globally.
-print("Disabling Blosc2 optimized slicing globally.")
+print("# Disabling Blosc2 optimized slicing globally")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     assert(b2h5py.is_dataset_class_patched())
@@ -91,16 +93,17 @@ with h5py.File(file_name, 'r') as f:
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     slice_ = dataset[150:, 150:]
-    print("Slice from dataset:", slice_, sep='\n')
+    print("Slice from dataset (filter):", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
     b2h5py.patch_dataset_class()  # back to normal
     assert(b2h5py.is_dataset_class_patched())
+    print()
 
 # Enabling Blosc2 optimized slicing temporarily
 # ---------------------------------------------
 # If you have disabled optimization,
 # you may use a context manager to enable it only for a part of your code.
-print("Using Blosc2 optimized slicing temporarily.")
+print("# Enabling Blosc2 optimized slicing temporarily")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     b2h5py.unpatch_dataset_class()
@@ -114,3 +117,4 @@ with h5py.File(file_name, 'r') as f:
     print("Slice from dataset (filter):", slice_, sep='\n')
     print("Slice from dataset (optimized):", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
+    print()
