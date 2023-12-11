@@ -3,6 +3,7 @@
 Tests that monkey-patching ``h5py.Dataset`` works as expected.
 """
 
+import contextlib
 import functools
 
 import b2h5py  # monkey-patches h5py.Dataset
@@ -93,6 +94,10 @@ class CMTestError(Exception):
 
 
 class ContextManagerTestCase(TestCase):
+    """Blosc2 patching context manager (no exception raised)"""
+
+    shall_raise = False
+
     def setUp(self):
         super().setUp()
         b2h5py.unpatch_dataset_class()
@@ -101,22 +106,22 @@ class ContextManagerTestCase(TestCase):
         b2h5py.patch_dataset_class()
         super().tearDown()
 
+    @property
+    def error_cmgr(self):
+        return (self.assertRaises(CMTestError) if self.shall_raise
+                else contextlib.nullcontext())
+
+    def maybe_raise(self):
+        if self.shall_raise:
+            raise CMTestError
+
     def test_default(self):
         """Dataset class is patched then unpatched"""
         self.assertFalse(b2h5py.is_dataset_class_patched())
-        with b2h5py.patching_dataset_class():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
-        self.assertFalse(b2h5py.is_dataset_class_patched())
-
-    def test_with_exception(self):
-        """Dataset class is patched then unpatched in spite of exceptions"""
-        self.assertFalse(b2h5py.is_dataset_class_patched())
-        try:
+        with self.error_cmgr:
             with b2h5py.patching_dataset_class():
                 self.assertTrue(b2h5py.is_dataset_class_patched())
-                raise CMTestError
-        except CMTestError:
-            pass
+                self.maybe_raise()
         self.assertFalse(b2h5py.is_dataset_class_patched())
 
     def test_exception(self):
@@ -129,16 +134,28 @@ class ContextManagerTestCase(TestCase):
         """Not unpatching if already patched before entry"""
         b2h5py.patch_dataset_class()
         self.assertTrue(b2h5py.is_dataset_class_patched())
-        with b2h5py.patching_dataset_class():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+        with self.error_cmgr:
+            with b2h5py.patching_dataset_class():
+                self.assertTrue(b2h5py.is_dataset_class_patched())
+                self.maybe_raise()
         self.assertTrue(b2h5py.is_dataset_class_patched())
 
     def test_nested(self):
         """Nesting patching context managers"""
         self.assertFalse(b2h5py.is_dataset_class_patched())
-        with b2h5py.patching_dataset_class():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+        with self.error_cmgr:
             with b2h5py.patching_dataset_class():
                 self.assertTrue(b2h5py.is_dataset_class_patched())
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+                with self.error_cmgr:
+                    with b2h5py.patching_dataset_class():
+                        self.assertTrue(b2h5py.is_dataset_class_patched())
+                        self.maybe_raise()
+                self.assertTrue(b2h5py.is_dataset_class_patched())
+                self.maybe_raise()
         self.assertFalse(b2h5py.is_dataset_class_patched())
+
+
+class ErrorContextManagerTestCase(ContextManagerTestCase):
+    """Blosc2 patching context manager (exception raised)"""
+
+    shall_raise = True
