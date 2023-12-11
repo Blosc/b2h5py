@@ -21,7 +21,7 @@ authors = [
     { name = "Ivan Vilata-i-Balaguer", email = "ivan@selidor.net" },
 ]
 version = "0.1.2.dev0"
-requires-python = ">= 3.2"  # functools wrapping
+requires-python = ">= 3.3"  # contextlib.ExitStack
 dependencies = [
     "blosc2 >= 2.3.0",  # open schunk by offset
     "numpy",
