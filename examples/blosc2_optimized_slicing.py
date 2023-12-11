@@ -109,12 +109,12 @@ with h5py.File(file_name, 'r') as f:
     b2h5py.unpatch_dataset_class()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
-    slice_filter = dataset[150:, 150:]
+    slice_ = dataset[150:, 150:]
+    print("Slice from dataset (filter):", slice_, sep='\n')
     with b2h5py.patching_dataset_class():
         assert(b2h5py.is_dataset_class_patched())
-        slice_opt = dataset[150:, 150:]
+        slice_ = dataset[150:, 150:]
+        print("Slice from dataset (optimized):", slice_, sep='\n')
     assert(not b2h5py.is_dataset_class_patched())
-    print("Slice from dataset (filter):", slice_, sep='\n')
-    print("Slice from dataset (optimized):", slice_, sep='\n')
     print("Slice from input array:", data[150:, 150:], sep='\n')
     print()
