@@ -3,8 +3,7 @@
 It creates a 2-dimensional dataset made of different chunks, compressed with
 Blosc2.  Then it proceeds to slice the dataset in ways that may and may not
 benefit from Blosc2 optimized slicing.  Some hints about forcing the use of
-the HDF5 filter pipeline are included, as well as comments on the Python
-package dependencies required for the different use cases.
+the HDF5 filter pipeline are included.
 
 Optimized slicing can provide considerable speed-ups in certain use cases,
 please see `this benchmark`__ which evaluates applying the same technique in
