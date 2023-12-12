@@ -23,7 +23,7 @@ After that, optimization will be attempted for any slicing of a dataset (of the 
 
 .. _hdf5plugin: https://github.com/silx-kit/hdf5plugin
 
-You may globally disable the optimization after importing ``b2h5py`` by calling ``b2h5py.disable_fast_slicing()``, and enable it again with ``b2h5py.enable_fast_slicing()``. You may also perform this patching temporarily by using ``b2h5py.patching_dataset_class()`` to get a context manager.
+You may globally disable the optimization after importing ``b2h5py`` by calling ``b2h5py.disable_fast_slicing()``, and enable it again with ``b2h5py.enable_fast_slicing()``. You may also enable it temporarily by using ``b2h5py.fast_slicing()`` to get a context manager.
 
 Building
 --------

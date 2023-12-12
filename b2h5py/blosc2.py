@@ -269,11 +269,13 @@ def disable_fast_slicing():
 
 
 @contextlib.contextmanager
-def patching_dataset_class():
-    """Get a context manager to patch ``h5py.Dataset`` temporarily.
+def fast_slicing():
+    """Get a context manager to temporarily activate support for Blosc2
+    optimized slicing.
 
-    If the class was already patched when the context manager is entered, it
-    remains patched on exit.  Otherwise, it is unpatched.
+    This means patching ``h5py.Dataset`` temporarily.  If the class was
+    already patched when the context manager is entered, it remains patched on
+    exit.  Otherwise, it is unpatched.
 
     Note: this change is applied globally while the context manager is active.
     """

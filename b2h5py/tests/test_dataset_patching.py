@@ -114,7 +114,7 @@ class ContextManagerTestCase(TestCase):
             def __enter__(self):
                 if test_case.shall_raise:
                     self.enter_context(test_case.assertRaises(CMTestError))
-                self.enter_context(b2h5py.patching_dataset_class())
+                self.enter_context(b2h5py.fast_slicing())
                 return super().__enter__()
 
         return CMTestContextManager()
@@ -135,7 +135,7 @@ class ContextManagerTestCase(TestCase):
         """Exceptions are propagated"""
         # This test always raises, do not use `self.patching_cmgr()`.
         with self.assertRaises(CMTestError):
-            with b2h5py.patching_dataset_class():
+            with b2h5py.fast_slicing():
                 raise CMTestError
 
     def test_already_patched(self):

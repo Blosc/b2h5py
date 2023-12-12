@@ -111,7 +111,7 @@ with h5py.File(file_name, 'r') as f:
     assert(not b2h5py.is_fast_slicing_enabled())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
-    with b2h5py.patching_dataset_class():
+    with b2h5py.fast_slicing():
         assert(b2h5py.is_fast_slicing_enabled())
         printl("Slice from dataset (optimized):", dataset[150:, 150:])
     assert(not b2h5py.is_fast_slicing_enabled())
