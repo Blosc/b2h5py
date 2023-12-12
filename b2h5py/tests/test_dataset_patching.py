@@ -27,7 +27,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_unpatch_patch(self):
         """Unpatching and patching dataset class again"""
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
         self.assertFalse(b2h5py.is_dataset_class_patched())
 
         b2h5py.patch_dataset_class()
@@ -44,16 +44,16 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_unpatch_again(self):
         """Unpatching the dataset class twice"""
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
         getitem1 = Dataset.__getitem__
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
         getitem2 = Dataset.__getitem__
 
         self.assertIs(getitem1, getitem2)
 
     def test_patch_patched(self):
         """Patching when already patched by someone else"""
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
 
         @functools.wraps(Dataset.__getitem__)
         def foreign_getitem(self, args, new_dtype=None):
@@ -66,11 +66,11 @@ class Blosc2DatasetPatchingTestCase(TestCase):
             self.assertTrue(b2h5py.is_dataset_class_patched())
             self.assertIs(Dataset.__getitem__.__wrapped__, foreign_getitem)
 
-            b2h5py.unpatch_dataset_class()
+            b2h5py.disable_fast_slicing()
             self.assertFalse(b2h5py.is_dataset_class_patched())
             self.assertIs(Dataset.__getitem__, foreign_getitem)
         finally:
-            b2h5py.unpatch_dataset_class()
+            b2h5py.disable_fast_slicing()
             Dataset.__getitem__ = foreign_getitem.__wrapped__
 
     def test_unpatch_foreign(self):
@@ -84,7 +84,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
         try:
             with self.assertRaises(ValueError):
-                b2h5py.unpatch_dataset_class()
+                b2h5py.disable_fast_slicing()
         finally:
             Dataset.__getitem__ = foreign_getitem.__wrapped__
 
@@ -100,7 +100,7 @@ class ContextManagerTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
 
     def tearDown(self):
         b2h5py.patch_dataset_class()

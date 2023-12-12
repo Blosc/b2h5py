@@ -241,11 +241,12 @@ def patch_dataset_class():
     h5py.Dataset.__getitem__ = B2Dataset___getitem__
 
 
-def unpatch_dataset_class():
-    """Undo the patching of ``h5py.Dataset`` to remove support for Blosc2
-    optimizations.
+def disable_fast_slicing():
+    """Globally deactivate support for Blosc2 optimized slicing.
 
-    This has no effect if the class has not been patched for this purpose.
+    This means undoing the patching of ``h5py.Dataset`` to remove support for
+    Blosc2 optimizations.  It has no effect if the class has not been patched
+    for this purpose.
 
     Raises `ValueError` if the operations patched by this code were already
     patched over by some other code.  In this case, the latter patch must be
@@ -282,4 +283,4 @@ def patching_dataset_class():
     try:
         yield None
     finally:
-        unpatch_dataset_class()
+        disable_fast_slicing()

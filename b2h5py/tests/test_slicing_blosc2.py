@@ -177,7 +177,7 @@ class Blosc2UnpatchTestCase(Blosc2OptSlicingTestCase):
 
     def setUp(self):
         super().setUp()
-        b2h5py.unpatch_dataset_class()
+        b2h5py.disable_fast_slicing()
 
     def tearDown(self):
         b2h5py.patch_dataset_class()

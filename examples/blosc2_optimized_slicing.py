@@ -91,7 +91,7 @@ print("# Disabling Blosc2 optimized slicing globally")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     assert(b2h5py.is_dataset_class_patched())
-    b2h5py.unpatch_dataset_class()
+    b2h5py.disable_fast_slicing()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
@@ -107,7 +107,7 @@ with h5py.File(file_name, 'r') as f:
 print("# Enabling Blosc2 optimized slicing temporarily")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
-    b2h5py.unpatch_dataset_class()
+    b2h5py.disable_fast_slicing()
     assert(not b2h5py.is_dataset_class_patched())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])

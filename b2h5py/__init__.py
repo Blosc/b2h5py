@@ -5,25 +5,25 @@ Optimizations are applied to slices of the form ``dataset[...]`` or
 the native byte order.
 
 They are enabled automatically on module import, by monkey-patching the
-``h5py.Dataset`` class.  You may explicitly undo this patching with
-`unpatch_dataset_class()` and redo it with `patch_dataset_class()`.  You may
-also patch the class temporarily using `patching_dataset_class()` to get a
-context manager.
+``h5py.Dataset`` class.  You may explicitly undo this patching and deactivate
+optimization globally with `disable_fast_slicing()` and redo it with
+`patch_dataset_class()`.  You may also patch the class temporarily using
+`patching_dataset_class()` to get a context manager.
 
 **Note:** For testing and debugging purposes, you may force-disable the
 optimization at any time by setting ``BLOSC2_FILTER=1`` in the environment.
 """
 
-from .blosc2 import (is_dataset_class_patched,
+from .blosc2 import (disable_fast_slicing,
+                     is_dataset_class_patched,
                      patch_dataset_class,
-                     patching_dataset_class,
-                     unpatch_dataset_class)
+                     patching_dataset_class)
 
 
-__all__ = ['is_dataset_class_patched',
+__all__ = ['disable_fast_slicing',
+           'is_dataset_class_patched',
            'patch_dataset_class',
-           'patching_dataset_class',
-           'unpatch_dataset_class']
+           'patching_dataset_class']
 
 
 patch_dataset_class()
