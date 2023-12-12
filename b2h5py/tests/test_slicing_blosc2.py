@@ -180,7 +180,7 @@ class Blosc2UnpatchTestCase(Blosc2OptSlicingTestCase):
         b2h5py.disable_fast_slicing()
 
     def tearDown(self):
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         super().tearDown()
 
     def should_enable_opt(self):

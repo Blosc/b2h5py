@@ -96,7 +96,7 @@ with h5py.File(file_name, 'r') as f:
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
     printl("Slice from input array:", data[150:, 150:])
-    b2h5py.patch_dataset_class()  # back to normal
+    b2h5py.enable_fast_slicing()  # back to normal
     assert(b2h5py.is_dataset_class_patched())
     print()
 

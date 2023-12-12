@@ -222,10 +222,11 @@ def is_dataset_class_patched():
     return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
 
 
-def patch_dataset_class():
-    """Patch ``h5py.Dataset`` to support Blosc2 optimizations.
+def enable_fast_slicing():
+    """Globally activate support for Blosc2 optimized slicing.
 
-    This has no effect if the class has already been patched for this purpose.
+    This means patching ``h5py.Dataset`` to support Blosc2 optimizations.  It
+    has no effect if the class has already been patched for this purpose.
 
     This supports patching the class if it has already been patched by other
     code for other purposes.
@@ -279,7 +280,7 @@ def patching_dataset_class():
         yield None
         return
 
-    patch_dataset_class()
+    enable_fast_slicing()
     try:
         yield None
     finally:

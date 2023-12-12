@@ -15,10 +15,10 @@ from h5py.tests.common import TestCase
 class Blosc2DatasetPatchingTestCase(TestCase):
     def setUp(self):
         super().setUp()
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
 
     def tearDown(self):
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         super().tearDown()
 
     def test_default(self):
@@ -30,14 +30,14 @@ class Blosc2DatasetPatchingTestCase(TestCase):
         b2h5py.disable_fast_slicing()
         self.assertFalse(b2h5py.is_dataset_class_patched())
 
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_dataset_class_patched())
 
     def test_patch_again(self):
         """Patching the dataset class twice"""
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         getitem1 = Dataset.__getitem__
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         getitem2 = Dataset.__getitem__
 
         self.assertIs(getitem1, getitem2)
@@ -62,7 +62,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
         Dataset.__getitem__ = foreign_getitem
 
         try:
-            b2h5py.patch_dataset_class()
+            b2h5py.enable_fast_slicing()
             self.assertTrue(b2h5py.is_dataset_class_patched())
             self.assertIs(Dataset.__getitem__.__wrapped__, foreign_getitem)
 
@@ -103,7 +103,7 @@ class ContextManagerTestCase(TestCase):
         b2h5py.disable_fast_slicing()
 
     def tearDown(self):
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         super().tearDown()
 
     def patching_cmgr(self):
@@ -140,7 +140,7 @@ class ContextManagerTestCase(TestCase):
 
     def test_already_patched(self):
         """Not unpatching if already patched before entry"""
-        b2h5py.patch_dataset_class()
+        b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_dataset_class_patched())
         with self.patching_cmgr():
             self.assertTrue(b2h5py.is_dataset_class_patched())
