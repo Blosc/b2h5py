@@ -215,22 +215,26 @@ def B2Dataset___getitem__(self, args, new_dtype=None):
     return B2Dataset___getitem__.__wrapped__(self, args, new_dtype)
 
 
-def is_dataset_class_patched():
-    """Return whether ``h5py.Dataset`` is already patched for Blosc2
+def is_fast_slicing_enabled():
+    """Return whether global support for Blosc2 optimized slicing is
+    activated.
+
+    This means checking whether``h5py.Dataset`` is already patched for Blosc2
     optimizations.
     """
     return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
 
 
-def patch_dataset_class():
-    """Patch ``h5py.Dataset`` to support Blosc2 optimizations.
+def enable_fast_slicing():
+    """Globally activate support for Blosc2 optimized slicing.
 
-    This has no effect if the class has already been patched for this purpose.
+    This means patching ``h5py.Dataset`` to support Blosc2 optimizations.  It
+    has no effect if the class has already been patched for this purpose.
 
     This supports patching the class if it has already been patched by other
     code for other purposes.
     """
-    if is_dataset_class_patched():
+    if is_fast_slicing_enabled():
         return  # already patched
 
     h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
@@ -241,17 +245,18 @@ def patch_dataset_class():
     h5py.Dataset.__getitem__ = B2Dataset___getitem__
 
 
-def unpatch_dataset_class():
-    """Undo the patching of ``h5py.Dataset`` to remove support for Blosc2
-    optimizations.
+def disable_fast_slicing():
+    """Globally deactivate support for Blosc2 optimized slicing.
 
-    This has no effect if the class has not been patched for this purpose.
+    This means undoing the patching of ``h5py.Dataset`` to remove support for
+    Blosc2 optimizations.  It has no effect if the class has not been patched
+    for this purpose.
 
     Raises `ValueError` if the operations patched by this code were already
     patched over by some other code.  In this case, the latter patch must be
     removed first (if the other code supports it).
     """
-    if not is_dataset_class_patched():
+    if not is_fast_slicing_enabled():
         return  # not patched
 
     if h5py.Dataset.__getitem__ is not B2Dataset___getitem__:
@@ -264,22 +269,24 @@ def unpatch_dataset_class():
 
 
 @contextlib.contextmanager
-def patching_dataset_class():
-    """Get a context manager to patch ``h5py.Dataset`` temporarily.
+def fast_slicing():
+    """Get a context manager to temporarily activate support for Blosc2
+    optimized slicing.
 
-    If the class was already patched when the context manager is entered, it
-    remains patched on exit.  Otherwise, it is unpatched.
+    This means patching ``h5py.Dataset`` temporarily.  If the class was
+    already patched when the context manager is entered, it remains patched on
+    exit.  Otherwise, it is unpatched.
 
     Note: this change is applied globally while the context manager is active.
     """
-    already_patched = is_dataset_class_patched()
+    already_patched = is_fast_slicing_enabled()
 
     if already_patched:  # do nothing
         yield None
         return
 
-    patch_dataset_class()
+    enable_fast_slicing()
     try:
         yield None
     finally:
-        unpatch_dataset_class()
+        disable_fast_slicing()
