@@ -71,7 +71,7 @@ with h5py.File(file_name, 'w') as f:
 print("# Using Blosc2 optimized slicing")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
-    assert(b2h5py.is_dataset_class_patched())
+    assert(b2h5py.is_fast_slicing_enabled())
     # One just uses slicing as usual.
     dataset = f[dataset_name]
     # Slices with step == 1 may be optimized.
@@ -90,14 +90,14 @@ with h5py.File(file_name, 'r') as f:
 print("# Disabling Blosc2 optimized slicing globally")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
-    assert(b2h5py.is_dataset_class_patched())
+    assert(b2h5py.is_fast_slicing_enabled())
     b2h5py.disable_fast_slicing()
-    assert(not b2h5py.is_dataset_class_patched())
+    assert(not b2h5py.is_fast_slicing_enabled())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
     printl("Slice from input array:", data[150:, 150:])
     b2h5py.enable_fast_slicing()  # back to normal
-    assert(b2h5py.is_dataset_class_patched())
+    assert(b2h5py.is_fast_slicing_enabled())
     print()
 
 # Enabling Blosc2 optimized slicing temporarily
@@ -108,12 +108,12 @@ print("# Enabling Blosc2 optimized slicing temporarily")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
     b2h5py.disable_fast_slicing()
-    assert(not b2h5py.is_dataset_class_patched())
+    assert(not b2h5py.is_fast_slicing_enabled())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
     with b2h5py.patching_dataset_class():
-        assert(b2h5py.is_dataset_class_patched())
+        assert(b2h5py.is_fast_slicing_enabled())
         printl("Slice from dataset (optimized):", dataset[150:, 150:])
-    assert(not b2h5py.is_dataset_class_patched())
+    assert(not b2h5py.is_fast_slicing_enabled())
     printl("Slice from input array:", data[150:, 150:])
     print()

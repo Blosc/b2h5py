@@ -16,13 +16,13 @@ optimization at any time by setting ``BLOSC2_FILTER=1`` in the environment.
 
 from .blosc2 import (disable_fast_slicing,
                      enable_fast_slicing,
-                     is_dataset_class_patched,
+                     is_fast_slicing_enabled,
                      patching_dataset_class)
 
 
 __all__ = ['disable_fast_slicing',
            'enable_fast_slicing',
-           'is_dataset_class_patched',
+           'is_fast_slicing_enabled',
            'patching_dataset_class']
 
 

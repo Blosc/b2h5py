@@ -23,15 +23,15 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_default(self):
         """Dataset class is patched by default"""
-        self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
 
     def test_unpatch_patch(self):
         """Unpatching and patching dataset class again"""
         b2h5py.disable_fast_slicing()
-        self.assertFalse(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
         b2h5py.enable_fast_slicing()
-        self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
 
     def test_patch_again(self):
         """Patching the dataset class twice"""
@@ -63,11 +63,11 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
         try:
             b2h5py.enable_fast_slicing()
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_fast_slicing_enabled())
             self.assertIs(Dataset.__getitem__.__wrapped__, foreign_getitem)
 
             b2h5py.disable_fast_slicing()
-            self.assertFalse(b2h5py.is_dataset_class_patched())
+            self.assertFalse(b2h5py.is_fast_slicing_enabled())
             self.assertIs(Dataset.__getitem__, foreign_getitem)
         finally:
             b2h5py.disable_fast_slicing()
@@ -125,11 +125,11 @@ class ContextManagerTestCase(TestCase):
 
     def test_default(self):
         """Dataset class is patched then unpatched"""
-        self.assertFalse(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
         with self.patching_cmgr():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_fast_slicing_enabled())
             self.maybe_raise()
-        self.assertFalse(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
     def test_exception(self):
         """Exceptions are propagated"""
@@ -141,23 +141,23 @@ class ContextManagerTestCase(TestCase):
     def test_already_patched(self):
         """Not unpatching if already patched before entry"""
         b2h5py.enable_fast_slicing()
-        self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
         with self.patching_cmgr():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_fast_slicing_enabled())
             self.maybe_raise()
-        self.assertTrue(b2h5py.is_dataset_class_patched())
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
 
     def test_nested(self):
         """Nesting patching context managers"""
-        self.assertFalse(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
         with self.patching_cmgr():
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_fast_slicing_enabled())
             with self.patching_cmgr():
-                self.assertTrue(b2h5py.is_dataset_class_patched())
+                self.assertTrue(b2h5py.is_fast_slicing_enabled())
                 self.maybe_raise()
-            self.assertTrue(b2h5py.is_dataset_class_patched())
+            self.assertTrue(b2h5py.is_fast_slicing_enabled())
             self.maybe_raise()
-        self.assertFalse(b2h5py.is_dataset_class_patched())
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
 
 class ErrorContextManagerTestCase(ContextManagerTestCase):
