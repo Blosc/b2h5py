@@ -15,10 +15,10 @@ temporarily using `fast_slicing()` to get a context manager.
 optimizations at any time by setting ``BLOSC2_FILTER=1`` in the environment.
 """
 
-from .blosc2 import (disable_fast_slicing,
-                     enable_fast_slicing,
-                     fast_slicing,
-                     is_fast_slicing_enabled)
+from .patch import (disable_fast_slicing,
+                    enable_fast_slicing,
+                    fast_slicing,
+                    is_fast_slicing_enabled)
 
 
 __all__ = ['disable_fast_slicing',

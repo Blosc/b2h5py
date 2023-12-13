@@ -8,7 +8,7 @@ After that, all slicing operations on Blosc2-compressed datasets will be
 transparently optimized when possible.
 """
 
-from .blosc2 import enable_fast_slicing
+from .patch import enable_fast_slicing
 
 
 enable_fast_slicing()

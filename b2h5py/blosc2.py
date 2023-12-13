@@ -1,10 +1,10 @@
 """Implements support for Blosc2 optimized slicing.
 
 Please note that for a selection over a dataset to be suitable for Blosc2
-optimized slicing, besides being amenable to fast reading, (i) such slicing
-must be enabled globally (`opt_slicing_enabled()`), (ii) the dataset must be
-amenable to it (`opt_slicing_dataset_ok()`), and (iii) the selection must be
-amenable to it (`opt_slicing_selection_ok()`).
+optimized slicing, (i) such slicing must be enabled globally
+(`opt_slicing_enabled()`), (ii) the dataset must be amenable to it
+(`opt_slicing_dataset_ok()`), and (iii) the selection must be amenable to it
+(`opt_slicing_selection_ok()`).
 
 If these conditions have already been checked for a given dataset,
 `opt_selection_read()` may be used.
@@ -14,8 +14,6 @@ monkey-patched), `opt_slice_read()` shoud suffice, as it takes care of the
 checks.
 """
 
-import contextlib
-import functools
 import os
 import platform
 
@@ -25,7 +23,10 @@ import numpy
 
 from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
-from h5py._hl.base import cached_property as h5cached_property, phil as h5phil
+
+
+opt_dataset_ok_prop = '_blosc2_opt_slicing_ok'
+"""The name of the dataset property calling `opt_slicing_dataset_ok()`."""
 
 
 class NoOptSlicingError(TypeError):
@@ -51,11 +52,11 @@ def opt_slicing_selection_ok(selection):
 def opt_slicing_dataset_ok(dataset):
     """Is the given dataset suitable for Blosc2 optimized slicing?
 
-    It is assumed that the dataset is also ok for fast reading.  The result
-    may be cached.
+    The result may be cached.
     """
     return (
-        dataset.chunks is not None
+        dataset._extent_type == h5py.h5s.SIMPLE  # amenable for fast reading
+        and dataset.chunks is not None
         # '.compression' and '.compression_opts' don't work with plugins:
         # <https://forum.hdfgroup.org/t/registering-custom-filter-issues/9239>
         and '32026' in dataset._filters  # Blosc2's ID
@@ -161,8 +162,8 @@ def opt_selection_read(dataset, selection, new_dtype=None):
 def opt_slice_read(dataset, slice_, new_dtype=None):
     """Read the specified slice from the given dataset.
 
-    The dataset must support a ``_blosc2_opt_slicing_ok`` property that calls
-    `opt_slicing_dataset_ok()`.
+    The dataset must support a property with the name in `opt_dataset_ok_prop`
+    that calls `opt_slicing_dataset_ok()`.
 
     Blosc2 optimized slice reading is used if available and suitable,
     otherwise a `NoOptSlicingError` is raised.
@@ -174,7 +175,7 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
     # if `_no_opt_error` is not derived from `NoOptSlicingError`
     # the get item operation shall not be able to catch the exception.
 
-    if not dataset._blosc2_opt_slicing_ok:
+    if not getattr(dataset, opt_dataset_ok_prop):
         raise _no_opt_error(
             "Dataset is not suitable for Blosc2 optimized slicing")
 
@@ -188,105 +189,3 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
             "Selection is not suitable for Blosc2 optimized slicing")
 
     return opt_selection_read(dataset, selection, new_dtype)
-
-
-# ``B2Dataset_*`` functions will be monkey-patched
-# into the ``h5py.Dataset`` class.
-
-@h5cached_property
-def B2Dataset__blosc2_opt_slicing_ok(self):
-    """Is this dataset suitable for Blosc2 optimized slicing"""
-    return (
-        self._extent_type == h5py.h5s.SIMPLE
-        and opt_slicing_dataset_ok(self)
-    )
-
-
-def B2Dataset___getitem__(self, args, new_dtype=None):
-    args = args if isinstance(args, tuple) else (args,)
-
-    with h5phil:
-        try:
-            return opt_slice_read(self, args, new_dtype)
-        except NoOptSlicingError:
-            pass  # No Blosc2 optimized slicing, try other approaches
-
-    # ``__wrapped__`` is set by ``functools.update_wrapper()`` below.
-    return B2Dataset___getitem__.__wrapped__(self, args, new_dtype)
-
-
-def is_fast_slicing_enabled():
-    """Return whether global support for Blosc2 optimized slicing is
-    activated.
-
-    This means checking whether``h5py.Dataset`` is already patched for Blosc2
-    optimizations.
-    """
-    return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
-
-
-def enable_fast_slicing():
-    """Globally activate support for Blosc2 optimized slicing.
-
-    This means patching ``h5py.Dataset`` to support Blosc2 optimizations.  It
-    has no effect if the class has already been patched for this purpose.
-
-    This supports patching the class if it has already been patched by other
-    code for other purposes.
-    """
-    if is_fast_slicing_enabled():
-        return  # already patched
-
-    h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
-    # Update the wrapper in the last moment,
-    # to work correctly in case the function was already monkey-patched
-    # by someone else after importing this module.
-    functools.update_wrapper(B2Dataset___getitem__, h5py.Dataset.__getitem__)
-    h5py.Dataset.__getitem__ = B2Dataset___getitem__
-
-
-def disable_fast_slicing():
-    """Globally deactivate support for Blosc2 optimized slicing.
-
-    This means undoing the patching of ``h5py.Dataset`` to remove support for
-    Blosc2 optimizations.  It has no effect if the class has not been patched
-    for this purpose.
-
-    Raises `ValueError` if the operations patched by this code were already
-    patched over by some other code.  In this case, the latter patch must be
-    removed first (if the other code supports it).
-    """
-    if not is_fast_slicing_enabled():
-        return  # not patched
-
-    if h5py.Dataset.__getitem__ is not B2Dataset___getitem__:
-        # To support this, we would need to
-        # go down the chain of ``__wrapped__`` attributes
-        # and alter them in place, which feels quite dangerous.
-        raise ValueError("dataset class was patched over by someone else")
-    h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
-    del h5py.Dataset._blosc2_opt_slicing_ok
-
-
-@contextlib.contextmanager
-def fast_slicing():
-    """Get a context manager to temporarily activate support for Blosc2
-    optimized slicing.
-
-    This means patching ``h5py.Dataset`` temporarily.  If the class was
-    already patched when the context manager is entered, it remains patched on
-    exit.  Otherwise, it is unpatched.
-
-    Note: this change is applied globally while the context manager is active.
-    """
-    already_patched = is_fast_slicing_enabled()
-
-    if already_patched:  # do nothing
-        yield None
-        return
-
-    enable_fast_slicing()
-    try:
-        yield None
-    finally:
-        disable_fast_slicing()
