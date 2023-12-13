@@ -45,7 +45,7 @@ def is_fast_slicing_enabled():
     This means checking whether``h5py.Dataset`` is already patched for Blosc2
     optimizations.
     """
-    return hasattr(h5py.Dataset, '_blosc2_opt_slicing_ok')
+    return hasattr(h5py.Dataset, b2.opt_dataset_ok_prop)
 
 
 def enable_fast_slicing():
@@ -60,7 +60,7 @@ def enable_fast_slicing():
     if is_fast_slicing_enabled():
         return  # already patched
 
-    h5py.Dataset._blosc2_opt_slicing_ok = B2Dataset__blosc2_opt_slicing_ok
+    setattr(h5py.Dataset, b2.opt_dataset_ok_prop, B2Dataset__blosc2_opt_slicing_ok)
     # Update the wrapper in the last moment,
     # to work correctly in case the function was already monkey-patched
     # by someone else after importing this module.
@@ -88,7 +88,7 @@ def disable_fast_slicing():
         # and alter them in place, which feels quite dangerous.
         raise ValueError("dataset class was patched over by someone else")
     h5py.Dataset.__getitem__ = h5py.Dataset.__getitem__.__wrapped__
-    del h5py.Dataset._blosc2_opt_slicing_ok
+    delattr(h5py.Dataset, b2.opt_dataset_ok_prop)
 
 
 @contextlib.contextmanager

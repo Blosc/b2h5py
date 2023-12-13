@@ -25,6 +25,10 @@ from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
 
 
+opt_dataset_ok_prop = '_blosc2_opt_slicing_ok'
+"""The name of the dataset property calling `opt_slicing_dataset_ok()`."""
+
+
 class NoOptSlicingError(TypeError):
     """Blosc2 optimized slicing is not possible."""
     pass
@@ -158,8 +162,8 @@ def opt_selection_read(dataset, selection, new_dtype=None):
 def opt_slice_read(dataset, slice_, new_dtype=None):
     """Read the specified slice from the given dataset.
 
-    The dataset must support a ``_blosc2_opt_slicing_ok`` property that calls
-    `opt_slicing_dataset_ok()`.
+    The dataset must support a property with the name in `opt_dataset_ok_prop`
+    that calls `opt_slicing_dataset_ok()`.
 
     Blosc2 optimized slice reading is used if available and suitable,
     otherwise a `NoOptSlicingError` is raised.
@@ -171,7 +175,7 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
     # if `_no_opt_error` is not derived from `NoOptSlicingError`
     # the get item operation shall not be able to catch the exception.
 
-    if not dataset._blosc2_opt_slicing_ok:
+    if not getattr(dataset, opt_dataset_ok_prop):
         raise _no_opt_error(
             "Dataset is not suitable for Blosc2 optimized slicing")
 
