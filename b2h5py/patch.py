@@ -23,6 +23,8 @@ from . import blosc2 as b2
 def B2Dataset_opt_dataset_ok(self):
     """Is this dataset suitable for Blosc2 optimized slicing"""
     return b2.opt_slicing_dataset_ok(self)
+# Fixing observable function name as it is used to cache the result.
+B2Dataset_opt_dataset_ok.func.__name__ = b2.opt_dataset_ok_prop
 
 
 def B2Dataset___getitem__(self, args, new_dtype=None):
