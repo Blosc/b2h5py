@@ -13,25 +13,21 @@ from h5py.tests.common import TestCase
 
 
 class Blosc2DatasetPatchingTestCase(TestCase):
-    def setUp(self):
-        super().setUp()
-        b2h5py.enable_fast_slicing()
-
     def tearDown(self):
-        b2h5py.enable_fast_slicing()
+        b2h5py.disable_fast_slicing()
         super().tearDown()
 
     def test_default(self):
-        """Dataset class is patched by default"""
-        self.assertTrue(b2h5py.is_fast_slicing_enabled())
-
-    def test_unpatch_patch(self):
-        """Unpatching and patching dataset class again"""
-        b2h5py.disable_fast_slicing()
+        """Dataset class is not patched by default"""
         self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
+    def test_patch_unpatch(self):
+        """Patching and unpatching dataset class again"""
         b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_fast_slicing_enabled())
+
+        b2h5py.disable_fast_slicing()
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
     def test_patch_again(self):
         """Patching the dataset class twice"""
@@ -53,8 +49,6 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_patch_patched(self):
         """Patching when already patched by someone else"""
-        b2h5py.disable_fast_slicing()
-
         @functools.wraps(Dataset.__getitem__)
         def foreign_getitem(self, args, new_dtype=None):
             return 42
@@ -75,6 +69,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_unpatch_foreign(self):
         """Unpatching when patched over by someone else"""
+        b2h5py.enable_fast_slicing()
 
         @functools.wraps(Dataset.__getitem__)
         def foreign_getitem(self, args, new_dtype=None):
