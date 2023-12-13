@@ -65,11 +65,11 @@ with h5py.File(file_name, 'w') as f:
 
 # Benefitting from Blosc2 optimized slicing
 # -----------------------------------------
-# After importing `b2h5py`,
+# After importing `b2h5py.auto`,
 # support for Blosc2 optimized slicing is enabled by default.
 print("# Using Blosc2 optimized slicing")
 with h5py.File(file_name, 'r') as f:
-    import b2h5py
+    import b2h5py.auto
     assert(b2h5py.is_fast_slicing_enabled())
     # One just uses slicing as usual.
     dataset = f[dataset_name]
@@ -82,21 +82,22 @@ with h5py.File(file_name, 'r') as f:
     printl("Sparse slice from dataset (filter):", dataset[150::2, 150::2])
     printl("Sparse slice from input array:", data[150::2, 150::2])
     print()
+b2h5py.disable_fast_slicing()  # back to normal
 
-# Disabling Blosc2 optimized slicing
-# ----------------------------------
+# Enabling Blosc2 optimized slicing
+# ---------------------------------
 # Utility functions are provided to enable and disable optimization globally.
-print("# Disabling Blosc2 optimized slicing globally")
+print("# Enabling Blosc2 optimized slicing globally")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
-    assert(b2h5py.is_fast_slicing_enabled())
-    b2h5py.disable_fast_slicing()
     assert(not b2h5py.is_fast_slicing_enabled())
-    dataset = f[dataset_name]
-    printl("Slice from dataset (filter):", dataset[150:, 150:])
-    printl("Slice from input array:", data[150:, 150:])
-    b2h5py.enable_fast_slicing()  # back to normal
+    b2h5py.enable_fast_slicing()
     assert(b2h5py.is_fast_slicing_enabled())
+    dataset = f[dataset_name]
+    printl("Slice from dataset (optimized):", dataset[150:, 150:])
+    printl("Slice from input array:", data[150:, 150:])
+    b2h5py.disable_fast_slicing()  # back to normal
+    assert(not b2h5py.is_fast_slicing_enabled())
     print()
 
 # Enabling Blosc2 optimized slicing temporarily
@@ -106,7 +107,6 @@ with h5py.File(file_name, 'r') as f:
 print("# Enabling Blosc2 optimized slicing temporarily")
 with h5py.File(file_name, 'r') as f:
     import b2h5py
-    b2h5py.disable_fast_slicing()
     assert(not b2h5py.is_fast_slicing_enabled())
     dataset = f[dataset_name]
     printl("Slice from dataset (filter):", dataset[150:, 150:])
