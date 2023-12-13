@@ -21,7 +21,8 @@ def run_h5py_tests():
         os.path.dirname(h5py.tests.__file__),
         top_level_dir=os.path.dirname(os.path.dirname(h5py.__file__)))
     test_runner = unittest.TextTestRunner()
-    test_runner.run(test_suite)
+    with b2h5py.fast_slicing():
+        test_runner.run(test_suite)
 
 
 if __name__ == '__main__':

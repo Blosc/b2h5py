@@ -15,15 +15,18 @@ Benchmarks of this technique show 2x-5x speed-ups compared with normal filter-ba
 Usage
 -----
 
-This optimized access works for slices with step 1 on Blosc2-compressed datasets using the native byte order. It is enabled by monkey-patching the ``h5py.Dataset`` class to extend the slicing operation. This is done on module import, so the only thing you need to do is::
+This optimized access works for slices with step 1 on Blosc2-compressed datasets using the native byte order. It is enabled by monkey-patching the ``h5py.Dataset`` class to extend the slicing operation. The easiest way to do this is::
 
-    import b2h5py
+    import b2h5py.auto
 
 After that, optimization will be attempted for any slicing of a dataset (of the form ``dataset[...]`` or ``dataset.__getitem__(...)``). If the optimization is not possible in a particular case, normal h5py slicing code will be used (which performs HDF5 filter-based access, backed by hdf5plugin_ to support Blosc2).
 
 .. _hdf5plugin: https://github.com/silx-kit/hdf5plugin
 
-You may globally disable the optimization after importing ``b2h5py`` by calling ``b2h5py.disable_fast_slicing()``, and enable it again with ``b2h5py.enable_fast_slicing()``. You may also enable it temporarily by using ``b2h5py.fast_slicing()`` to get a context manager.
+You may instead just ``import b2h5py`` and explicitly enable the optimization globally by calling ``b2h5py.enable_fast_slicing()``, and disable it again with ``b2h5py.disable_fast_slicing()``. You may also enable it temporarily by using a context manager::
+
+    with b2h5py.fast_slicing():
+        # ... code that will use Blosc2 optimized slicing ...
 
 Building
 --------

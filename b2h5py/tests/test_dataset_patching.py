@@ -6,32 +6,28 @@ Tests that monkey-patching ``h5py.Dataset`` works as expected.
 import contextlib
 import functools
 
-import b2h5py  # monkey-patches h5py.Dataset
+import b2h5py
 
 from h5py import Dataset
 from h5py.tests.common import TestCase
 
 
 class Blosc2DatasetPatchingTestCase(TestCase):
-    def setUp(self):
-        super().setUp()
-        b2h5py.enable_fast_slicing()
-
     def tearDown(self):
-        b2h5py.enable_fast_slicing()
+        b2h5py.disable_fast_slicing()
         super().tearDown()
 
-    def test_default(self):
-        """Dataset class is patched by default"""
-        self.assertTrue(b2h5py.is_fast_slicing_enabled())
-
-    def test_unpatch_patch(self):
-        """Unpatching and patching dataset class again"""
-        b2h5py.disable_fast_slicing()
+    def test_00default(self):
+        """Dataset class is not patched by default"""
         self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
+    def test_patch_unpatch(self):
+        """Patching and unpatching dataset class again"""
         b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_fast_slicing_enabled())
+
+        b2h5py.disable_fast_slicing()
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
     def test_patch_again(self):
         """Patching the dataset class twice"""
@@ -53,8 +49,6 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_patch_patched(self):
         """Patching when already patched by someone else"""
-        b2h5py.disable_fast_slicing()
-
         @functools.wraps(Dataset.__getitem__)
         def foreign_getitem(self, args, new_dtype=None):
             return 42
@@ -75,6 +69,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
 
     def test_unpatch_foreign(self):
         """Unpatching when patched over by someone else"""
+        b2h5py.enable_fast_slicing()
 
         @functools.wraps(Dataset.__getitem__)
         def foreign_getitem(self, args, new_dtype=None):
@@ -88,6 +83,12 @@ class Blosc2DatasetPatchingTestCase(TestCase):
         finally:
             Dataset.__getitem__ = foreign_getitem.__wrapped__
 
+    def test_auto(self):
+        """Patching on importing auto module"""
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
+        import b2h5py.auto as b2a
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
+
 
 class CMTestError(Exception):
     pass
@@ -97,14 +98,6 @@ class ContextManagerTestCase(TestCase):
     """Blosc2 patching context manager (no exception raised)"""
 
     shall_raise = False
-
-    def setUp(self):
-        super().setUp()
-        b2h5py.disable_fast_slicing()
-
-    def tearDown(self):
-        b2h5py.enable_fast_slicing()
-        super().tearDown()
 
     def patching_cmgr(self):
         """Checks for error if `self.shall_raise`, patches dataset class"""
@@ -123,7 +116,7 @@ class ContextManagerTestCase(TestCase):
         if self.shall_raise:
             raise CMTestError
 
-    def test_default(self):
+    def test_00default(self):
         """Dataset class is patched then unpatched"""
         self.assertFalse(b2h5py.is_fast_slicing_enabled())
         with self.patching_cmgr():
@@ -142,10 +135,13 @@ class ContextManagerTestCase(TestCase):
         """Not unpatching if already patched before entry"""
         b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_fast_slicing_enabled())
-        with self.patching_cmgr():
+        try:
+            with self.patching_cmgr():
+                self.assertTrue(b2h5py.is_fast_slicing_enabled())
+                self.maybe_raise()
             self.assertTrue(b2h5py.is_fast_slicing_enabled())
-            self.maybe_raise()
-        self.assertTrue(b2h5py.is_fast_slicing_enabled())
+        finally:
+            b2h5py.disable_fast_slicing()
 
     def test_nested(self):
         """Nesting patching context managers"""
