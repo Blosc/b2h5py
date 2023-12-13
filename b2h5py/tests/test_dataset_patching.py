@@ -17,7 +17,7 @@ class Blosc2DatasetPatchingTestCase(TestCase):
         b2h5py.disable_fast_slicing()
         super().tearDown()
 
-    def test_default(self):
+    def test_00default(self):
         """Dataset class is not patched by default"""
         self.assertFalse(b2h5py.is_fast_slicing_enabled())
 
@@ -110,7 +110,7 @@ class ContextManagerTestCase(TestCase):
         if self.shall_raise:
             raise CMTestError
 
-    def test_default(self):
+    def test_00default(self):
         """Dataset class is patched then unpatched"""
         self.assertFalse(b2h5py.is_fast_slicing_enabled())
         with self.patching_cmgr():
