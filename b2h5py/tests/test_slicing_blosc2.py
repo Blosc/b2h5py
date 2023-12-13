@@ -42,6 +42,9 @@ def check_opt_slicing(test):
     def checked_test(self):
         if not self.should_enable_opt():
             return test(self)
+        # If the dataset class is not patched,
+        # the exception set below is never raised anyway.
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
         # Force an exception if the optimization is not used.
         orig_exc = b2h5py.blosc2._no_opt_error
         b2h5py.blosc2._no_opt_error = Blosc2OptNotUsedError
