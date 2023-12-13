@@ -83,6 +83,12 @@ class Blosc2DatasetPatchingTestCase(TestCase):
         finally:
             Dataset.__getitem__ = foreign_getitem.__wrapped__
 
+    def test_auto(self):
+        """Patching on importing auto module"""
+        self.assertFalse(b2h5py.is_fast_slicing_enabled())
+        import b2h5py.auto as b2a
+        self.assertTrue(b2h5py.is_fast_slicing_enabled())
+
 
 class CMTestError(Exception):
     pass
