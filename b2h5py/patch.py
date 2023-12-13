@@ -1,3 +1,11 @@
+"""Support for patching the ``h5py.Dataset`` class.
+
+Use `enable_fast_slicing()` to patch the class globally,
+`disable_fast_slicing()` to unpatch it, and `is_fast_slicing_enabled()` to
+tell whether the class is patched or not.  Call `fast_slicing()` to get a
+context manager that patches the class temporarily.
+"""
+
 import contextlib
 import functools
 
