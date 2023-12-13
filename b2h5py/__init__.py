@@ -2,17 +2,17 @@
 
 Optimizations are applied to slices of the form ``dataset[...]`` or
 ``dataset.__getitem__(...)`` with step 1 on Blosc2-compressed datasets using
-the native byte order.
+the native byte order.  They are implemented by monkey-patching the
+``h5py.Dataset`` class.
 
-They are enabled automatically on module import, by monkey-patching the
-``h5py.Dataset`` class.  You may explicitly undo this patching and deactivate
-optimization globally with `disable_fast_slicing()` and redo it and activate
-it again with `enable_fast_slicing()`.  You may also patch the class and
-activate optimization temporarily using `fast_slicing()` to get a context
-manager.
+Optimizations need to be enabled explicitly.  One option is to call
+`enable_fast_slicing()` to enable them globally (by performing the patching).
+Then `disable_fast_slicing()` may be called to disable them again (by undoing
+the patching).  As an alternative, you may also activate optimizations
+temporarily using `fast_slicing()` to get a context manager.
 
-**Note:** For testing and debugging purposes, you may force-disable the
-optimization at any time by setting ``BLOSC2_FILTER=1`` in the environment.
+**Note:** For testing and debugging purposes, you may force-disable
+optimizations at any time by setting ``BLOSC2_FILTER=1`` in the environment.
 """
 
 from .blosc2 import (disable_fast_slicing,
@@ -25,6 +25,3 @@ __all__ = ['disable_fast_slicing',
            'enable_fast_slicing',
            'fast_slicing',
            'is_fast_slicing_enabled']
-
-
-enable_fast_slicing()
