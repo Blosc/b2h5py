@@ -6,7 +6,7 @@ Tests that monkey-patching ``h5py.Dataset`` works as expected.
 import contextlib
 import functools
 
-import b2h5py  # monkey-patches h5py.Dataset
+import b2h5py
 
 from h5py import Dataset
 from h5py.tests.common import TestCase
@@ -98,14 +98,6 @@ class ContextManagerTestCase(TestCase):
 
     shall_raise = False
 
-    def setUp(self):
-        super().setUp()
-        b2h5py.disable_fast_slicing()
-
-    def tearDown(self):
-        b2h5py.enable_fast_slicing()
-        super().tearDown()
-
     def patching_cmgr(self):
         """Checks for error if `self.shall_raise`, patches dataset class"""
         test_case = self
@@ -142,10 +134,13 @@ class ContextManagerTestCase(TestCase):
         """Not unpatching if already patched before entry"""
         b2h5py.enable_fast_slicing()
         self.assertTrue(b2h5py.is_fast_slicing_enabled())
-        with self.patching_cmgr():
+        try:
+            with self.patching_cmgr():
+                self.assertTrue(b2h5py.is_fast_slicing_enabled())
+                self.maybe_raise()
             self.assertTrue(b2h5py.is_fast_slicing_enabled())
-            self.maybe_raise()
-        self.assertTrue(b2h5py.is_fast_slicing_enabled())
+        finally:
+            b2h5py.disable_fast_slicing()
 
     def test_nested(self):
         """Nesting patching context managers"""
