@@ -20,7 +20,7 @@ from . import blosc2 as b2
 # into the ``h5py.Dataset`` class.
 
 @h5cached_property
-def B2Dataset__blosc2_opt_slicing_ok(self):
+def B2Dataset_opt_dataset_ok(self):
     """Is this dataset suitable for Blosc2 optimized slicing"""
     return b2.opt_slicing_dataset_ok(self)
 
@@ -60,7 +60,7 @@ def enable_fast_slicing():
     if is_fast_slicing_enabled():
         return  # already patched
 
-    setattr(h5py.Dataset, b2.opt_dataset_ok_prop, B2Dataset__blosc2_opt_slicing_ok)
+    setattr(h5py.Dataset, b2.opt_dataset_ok_prop, B2Dataset_opt_dataset_ok)
     # Update the wrapper in the last moment,
     # to work correctly in case the function was already monkey-patched
     # by someone else after importing this module.
