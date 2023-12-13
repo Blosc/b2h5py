@@ -8,7 +8,7 @@ import os
 import functools
 import random
 
-import b2h5py  # monkey-patches h5py.Dataset
+import b2h5py
 import hdf5plugin as h5p
 import numpy as np
 
@@ -53,7 +53,7 @@ def check_opt_slicing(test):
 
 
 class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
-    """Blosc2 optimized slicing"""
+    """Blosc2 optimized slicing by patching dataset class"""
 
     blosc2_force_filter = False
 
@@ -67,8 +67,10 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
         self.blosc2_filter_env = os.environ.get('BLOSC2_FILTER', '0')
         os.environ['BLOSC2_FILTER'] = '1' if self.blosc2_force_filter else '0'
+        b2h5py.enable_fast_slicing()
 
     def tearDown(self):
+        b2h5py.disable_fast_slicing()
         os.environ['BLOSC2_FILTER'] = self.blosc2_filter_env
         super().tearDown()
 
@@ -167,7 +169,7 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
 
 class Blosc2FiltSlicingTestCase(Blosc2OptSlicingTestCase):
-    """Blosc2 filter slicing"""
+    """Blosc2 filter slicing forced by environment variable"""
 
     blosc2_force_filter = True
 
@@ -178,10 +180,6 @@ class Blosc2UnpatchTestCase(Blosc2OptSlicingTestCase):
     def setUp(self):
         super().setUp()
         b2h5py.disable_fast_slicing()
-
-    def tearDown(self):
-        b2h5py.enable_fast_slicing()
-        super().tearDown()
 
     def should_enable_opt(self):
         return False
@@ -214,6 +212,11 @@ class Blosc2OptSlicingMinTestCase(TestCase, StoreArrayMixin):
         self.chunks = (2, 2, 1)
         self.arr = np.arange(np.prod(shape), dtype="u1").reshape(shape)
         StoreArrayMixin.setUp(self)
+        b2h5py.enable_fast_slicing()
+
+    def tearDown(self):
+        b2h5py.disable_fast_slicing()
+        TestCase().tearDown()
 
     def should_enable_opt(self):
         return True
@@ -246,6 +249,11 @@ class Blosc2OptSlicingCompTestCase(TestCase, StoreArrayMixin):
         arr[4, 4] = (9, 9)
         self.arr = arr
         StoreArrayMixin.setUp(self)
+        b2h5py.enable_fast_slicing()
+
+    def tearDown(self):
+        b2h5py.disable_fast_slicing()
+        TestCase().tearDown()
 
     def should_enable_opt(self):
         return True
