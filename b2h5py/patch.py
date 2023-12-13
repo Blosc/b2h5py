@@ -22,10 +22,7 @@ from . import blosc2 as b2
 @h5cached_property
 def B2Dataset__blosc2_opt_slicing_ok(self):
     """Is this dataset suitable for Blosc2 optimized slicing"""
-    return (
-        self._extent_type == h5py.h5s.SIMPLE
-        and b2.opt_slicing_dataset_ok(self)
-    )
+    return b2.opt_slicing_dataset_ok(self)
 
 
 def B2Dataset___getitem__(self, args, new_dtype=None):

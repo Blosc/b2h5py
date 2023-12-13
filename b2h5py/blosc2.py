@@ -1,10 +1,10 @@
 """Implements support for Blosc2 optimized slicing.
 
 Please note that for a selection over a dataset to be suitable for Blosc2
-optimized slicing, besides being amenable to fast reading, (i) such slicing
-must be enabled globally (`opt_slicing_enabled()`), (ii) the dataset must be
-amenable to it (`opt_slicing_dataset_ok()`), and (iii) the selection must be
-amenable to it (`opt_slicing_selection_ok()`).
+optimized slicing, (i) such slicing must be enabled globally
+(`opt_slicing_enabled()`), (ii) the dataset must be amenable to it
+(`opt_slicing_dataset_ok()`), and (iii) the selection must be amenable to it
+(`opt_slicing_selection_ok()`).
 
 If these conditions have already been checked for a given dataset,
 `opt_selection_read()` may be used.
@@ -48,11 +48,11 @@ def opt_slicing_selection_ok(selection):
 def opt_slicing_dataset_ok(dataset):
     """Is the given dataset suitable for Blosc2 optimized slicing?
 
-    It is assumed that the dataset is also ok for fast reading.  The result
-    may be cached.
+    The result may be cached.
     """
     return (
-        dataset.chunks is not None
+        dataset._extent_type == h5py.h5s.SIMPLE  # amenable for fast reading
+        and dataset.chunks is not None
         # '.compression' and '.compression_opts' don't work with plugins:
         # <https://forum.hdfgroup.org/t/registering-custom-filter-issues/9239>
         and '32026' in dataset._filters  # Blosc2's ID
