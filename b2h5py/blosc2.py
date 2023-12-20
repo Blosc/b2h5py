@@ -23,6 +23,7 @@ import numpy
 
 from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
+from h5py._hl.base import cached_property as h5cached_property, phil as h5phil
 
 
 opt_dataset_ok_prop = '_blosc2_opt_slicing_ok'
@@ -189,3 +190,45 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
             "Selection is not suitable for Blosc2 optimized slicing")
 
     return opt_selection_read(dataset, selection, new_dtype)
+
+
+
+class B2Dataset:
+    """Allow to read data from a h5py dataset compressed with Blosc2 in an efficient way
+
+    Example:
+
+    .. code-block:: python
+
+        f = h5py.File("/path/to/file.h5", "r")
+        ds = B2Dataset(f["/hdf5/path/to/blocs2_compressed_dataset"])
+        data = ds[:10, :]
+        f.close()
+    """
+
+    def __init__(self, dataset: h5py.Dataset):
+        if not isinstance(dataset, h5py.Dataset):
+            raise ValueError("dataset must be a h5py.Dataset")
+        self.__dataset = dataset
+
+    @property
+    def dataset(self) -> h5py.Dataset:
+        """The h5py dataset this instance gives access to"""
+        return self.__dataset
+
+    @h5cached_property
+    def is_b2_fast_access(self) -> bool:
+        """Whether or not Blosc2 fast slicing access is enabled"""
+        return opt_slicing_dataset_ok(self.dataset)
+
+    def __getitem__(self, args):
+        slice_ = args if isinstance(args, tuple) else (args,)
+        selection = h5sel.select(self.dataset.shape, slice_, dataset=self.dataset)
+        if not self.is_b2_fast_access or not opt_slicing_selection_ok(selection):
+            return self.dataset.__getitem__(slice_)
+
+        with h5phil:
+            return opt_selection_read(self.dataset, selection)
+
+    def __getattr__(self, name):  # Proxy h5py.Dataset methods and attributes
+        return getattr(self.dataset, name)
