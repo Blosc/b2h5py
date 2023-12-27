@@ -231,8 +231,8 @@ class B2Dataset:
         return self.__dataset
 
     @property
-    def is_b2_fast_access(self) -> bool:
-        """Whether or not Blosc2 fast slicing access is enabled"""
+    def is_b2_fast_slicing(self) -> bool:
+        """Whether or not Blosc2 optimized slicing is enabled"""
         return getattr(self, opt_dataset_ok_prop)
 
     def __getitem__(self, args):

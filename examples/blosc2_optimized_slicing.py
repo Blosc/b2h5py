@@ -127,7 +127,7 @@ print("# Using Blosc2 optimized slicing through B2Dataset")
 with h5py.File(file_name, 'r') as f:
     # Wrap h5py Dataset in B2Dataset
     dataset = B2Dataset(f[dataset_name])
-    assert dataset.is_b2_fast_access
+    assert dataset.is_b2_fast_slicing
     printl("Contiguous slice from dataset (optimized):", dataset[150:, 150:])
     printl("Contiguous slice from input array:", data[150:, 150:])
     print()

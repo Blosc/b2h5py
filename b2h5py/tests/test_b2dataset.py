@@ -1,4 +1,4 @@
-"""Test using B2Dataset to enable fast access to Blosc2 compressed dataset.
+"""Test using B2Dataset to enable optimized access to Blosc2 compressed dataset.
 """
 
 import numpy as np
@@ -21,7 +21,7 @@ class TestB2Dataset(TestCase, StoreArrayMixin):
 
     def testB2Dataset(self):
         b2dataset = B2Dataset(self.dset)
-        self.assertTrue(b2dataset.is_b2_fast_access)
+        self.assertTrue(b2dataset.is_b2_fast_slicing)
 
         # Access h5py.Dataset attribute
         self.assertEqual(b2dataset.chunks, self.dset.chunks)
@@ -38,7 +38,7 @@ class TestB2Dataset(TestCase, StoreArrayMixin):
     def testIter(self):
         """Iteration does not hang"""
         b2dataset = B2Dataset(self.dset)
-        self.assertTrue(b2dataset.is_b2_fast_access)
+        self.assertTrue(b2dataset.is_b2_fast_slicing)
 
         b2dsiter = iter(b2dataset)
         next(b2dsiter)
