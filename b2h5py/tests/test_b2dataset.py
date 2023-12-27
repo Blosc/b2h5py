@@ -34,3 +34,13 @@ class TestB2Dataset(TestCase, StoreArrayMixin):
             with checking_opt_slicing():
                 b2dataset[::2]  # step != 1 not supported currently
         self.assertArrayEqual(b2dataset[::2], self.arr[::2])
+
+    def testIter(self):
+        """Iteration does not hang"""
+        b2dataset = B2Dataset(self.dset)
+        self.assertTrue(b2dataset.is_b2_fast_access)
+
+        b2dsiter = iter(b2dataset)
+        next(b2dsiter)
+        next(b2dsiter)
+        return
