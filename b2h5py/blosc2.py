@@ -1,10 +1,9 @@
 """Implements support for Blosc2 optimized slicing.
 
 Please note that for a selection over a dataset to be suitable for Blosc2
-optimized slicing, (i) such slicing must be enabled globally
-(`opt_slicing_enabled()`), (ii) the dataset must be amenable to it
-(`opt_slicing_dataset_ok()`), and (iii) the selection must be amenable to it
-(`opt_slicing_selection_ok()`).
+optimized slicing, (i) such slicing must be enabled globally, (ii) the dataset
+must be amenable to it, and (iii) the selection must be amenable to it.  This
+is checked by `opt_slice_check()`.
 
 If these conditions have already been checked for a given dataset,
 `opt_selection_read()` may be used.
@@ -23,6 +22,7 @@ import numpy
 
 from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
+from h5py._hl.base import phil as h5phil
 
 
 opt_dataset_ok_prop = '_blosc2_opt_slicing_ok'
@@ -159,17 +159,15 @@ def opt_selection_read(dataset, selection, new_dtype=None):
     return slice_arr.reshape(ret_shape)
 
 
-def opt_slice_read(dataset, slice_, new_dtype=None):
-    """Read the specified slice from the given dataset.
+def opt_slice_check(dataset, slice_):
+    """Check that slicing the dataset can use Blosc2 optimizations.
 
     The dataset must support a property with the name in `opt_dataset_ok_prop`
     that calls `opt_slicing_dataset_ok()`.
 
-    Blosc2 optimized slice reading is used if available and suitable,
-    otherwise a `NoOptSlicingError` is raised.
-
-    A NumPy array is returned with the desired slice.  The array will have the
-    given new dtype if specified.
+    Return the selection object associated with the slice if Blosc2 optimized
+    slice reading is available and suitable, otherwise raise
+    `NoOptSlicingError`.
     """
     # In the following checks,
     # if `_no_opt_error` is not derived from `NoOptSlicingError`
@@ -188,4 +186,63 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
         raise _no_opt_error(
             "Selection is not suitable for Blosc2 optimized slicing")
 
+    return selection
+
+
+def opt_slice_read(dataset, slice_, new_dtype=None):
+    """Read the specified slice from the given dataset.
+
+    The dataset must support a property with the name in `opt_dataset_ok_prop`
+    that calls `opt_slicing_dataset_ok()`.
+
+    Blosc2 optimized slice reading is used if available and suitable,
+    otherwise a `NoOptSlicingError` is raised.
+
+    A NumPy array is returned with the desired slice.  The array will have the
+    given new dtype if specified.
+    """
+    selection = opt_slice_check(dataset, slice_)
     return opt_selection_read(dataset, selection, new_dtype)
+
+
+class B2Dataset:
+    """Allow to read data from a h5py dataset compressed with Blosc2 in an efficient way
+
+    Example:
+
+    .. code-block:: python
+
+        f = h5py.File("/path/to/file.h5", "r")
+        ds = B2Dataset(f["/hdf5/path/to/blocs2_compressed_dataset"])
+        data = ds[:10, :]
+        f.close()
+    """
+
+    def __init__(self, dataset: h5py.Dataset):
+        if not isinstance(dataset, h5py.Dataset):
+            raise ValueError("dataset must be a h5py.Dataset")
+        self.__dataset = dataset
+        # An attribute should suffice.
+        setattr(self, opt_dataset_ok_prop, opt_slicing_dataset_ok(dataset))
+
+    @property
+    def dataset(self) -> h5py.Dataset:
+        """The h5py dataset this instance gives access to"""
+        return self.__dataset
+
+    @property
+    def is_b2_fast_slicing(self) -> bool:
+        """Whether or not Blosc2 optimized slicing is enabled"""
+        return getattr(self, opt_dataset_ok_prop)
+
+    def __getitem__(self, args):
+        slice_ = args if isinstance(args, tuple) else (args,)
+        try:
+            selection = opt_slice_check(self, slice_)
+        except NoOptSlicingError:
+            return self.__dataset.__getitem__(slice_)
+        with h5phil:
+            return opt_selection_read(self.__dataset, selection)
+
+    def __getattr__(self, name):  # Proxy h5py.Dataset methods and attributes
+        return getattr(self.__dataset, name)
