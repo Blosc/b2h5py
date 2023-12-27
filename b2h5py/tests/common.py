@@ -1,5 +1,6 @@
 """Common code for b2h5py tests."""
 
+import contextlib
 import functools
 
 import b2h5py
@@ -27,6 +28,17 @@ class StoreArrayMixin:
         self.dset = self.f['x']
 
 
+@contextlib.contextmanager
+def checking_opt_slicing():
+    # Force an exception if the optimization is not used.
+    orig_exc = b2h5py.blosc2._no_opt_error
+    b2h5py.blosc2._no_opt_error = Blosc2OptNotUsedError
+    try:
+        yield
+    finally:
+            b2h5py.blosc2._no_opt_error = orig_exc
+
+
 def check_opt_slicing(test):
     """Decorate `test` to fail if slicing did not use expected optimization"""
     @functools.wraps(test)
@@ -36,11 +48,6 @@ def check_opt_slicing(test):
         # If the dataset class is not patched,
         # the exception set below is never raised anyway.
         self.assertTrue(b2h5py.is_fast_slicing_enabled())
-        # Force an exception if the optimization is not used.
-        orig_exc = b2h5py.blosc2._no_opt_error
-        b2h5py.blosc2._no_opt_error = Blosc2OptNotUsedError
-        try:
+        with checking_opt_slicing():
             return test(self)
-        finally:
-            b2h5py.blosc2._no_opt_error = orig_exc
     return checked_test
