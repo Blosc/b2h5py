@@ -22,7 +22,7 @@ import numpy
 
 from blosc2.schunk import open as b2schunk_open
 from h5py._hl import selections as h5sel
-from h5py._hl.base import cached_property as h5cached_property, phil as h5phil
+from h5py._hl.base import phil as h5phil
 
 
 opt_dataset_ok_prop = '_blosc2_opt_slicing_ok'
@@ -222,25 +222,27 @@ class B2Dataset:
         if not isinstance(dataset, h5py.Dataset):
             raise ValueError("dataset must be a h5py.Dataset")
         self.__dataset = dataset
+        # An attribute should suffice.
+        setattr(self, opt_dataset_ok_prop, opt_slicing_dataset_ok(dataset))
 
     @property
     def dataset(self) -> h5py.Dataset:
         """The h5py dataset this instance gives access to"""
         return self.__dataset
 
-    @h5cached_property
+    @property
     def is_b2_fast_access(self) -> bool:
         """Whether or not Blosc2 fast slicing access is enabled"""
-        return opt_slicing_dataset_ok(self.dataset)
+        return getattr(self, opt_dataset_ok_prop)
 
     def __getitem__(self, args):
         slice_ = args if isinstance(args, tuple) else (args,)
-        selection = h5sel.select(self.dataset.shape, slice_, dataset=self.dataset)
-        if not self.is_b2_fast_access or not opt_slicing_selection_ok(selection):
-            return self.dataset.__getitem__(slice_)
-
+        try:
+            selection = opt_slice_check(self, slice_)
+        except NoOptSlicingError:
+            return self.__dataset.__getitem__(slice_)
         with h5phil:
-            return opt_selection_read(self.dataset, selection)
+            return opt_selection_read(self.__dataset, selection)
 
     def __getattr__(self, name):  # Proxy h5py.Dataset methods and attributes
         return getattr(self.dataset, name)
