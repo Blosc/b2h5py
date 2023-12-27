@@ -40,7 +40,10 @@ def checking_opt_slicing():
 
 
 def check_opt_slicing(test):
-    """Decorate `test` to fail if slicing did not use expected optimization"""
+    """Decorate `test` to fail if slicing did not use expected optimization.
+
+    It requires a `should_enable_opt() -> bool` method in the test case.
+    """
     @functools.wraps(test)
     def checked_test(self):
         if not self.should_enable_opt():
