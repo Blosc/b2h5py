@@ -11,7 +11,8 @@ Then `disable_fast_slicing()` may be called to disable them again (by undoing
 the patching).  As an alternative, you may also activate optimizations
 temporarily using `fast_slicing()` to get a context manager.
 
-To explicitly enable optimizations for a given h5py Dataset, use `B2Dataset`.
+To explicitly enable optimizations for a given h5py ``Dataset`` instance, use
+`B2Dataset`.
 
 **Note:** For testing and debugging purposes, you may force-disable
 optimizations at any time by setting ``BLOSC2_FILTER=1`` in the environment.

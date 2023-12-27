@@ -28,6 +28,11 @@ You may instead just ``import b2h5py`` and explicitly enable the optimization gl
     with b2h5py.fast_slicing():
         # ... code that will use Blosc2 optimized slicing ...
 
+Finally, you may explicitly enable optimizations for a given h5py dataset by wrapping it in a `B2Dataset` instance::
+
+    b2dset = b2h5py.B2Dataset(dset)
+    # ... slicing ``b2dset`` will use Blosc2 optimization ...
+
 Building
 --------
 
