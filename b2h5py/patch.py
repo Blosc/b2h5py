@@ -28,8 +28,6 @@ B2Dataset_opt_dataset_ok.func.__name__ = b2.opt_dataset_ok_prop
 
 
 def B2Dataset___getitem__(self, args, new_dtype=None):
-    args = args if isinstance(args, tuple) else (args,)
-
     with h5phil:
         try:
             return b2.opt_slice_read(self, args, new_dtype)

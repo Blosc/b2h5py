@@ -236,11 +236,10 @@ class B2Dataset:
         return getattr(self, opt_dataset_ok_prop)
 
     def __getitem__(self, args):
-        slice_ = args if isinstance(args, tuple) else (args,)
         try:
-            selection = opt_slice_check(self, slice_)
+            selection = opt_slice_check(self, args)
         except NoOptSlicingError:
-            return self.__dataset.__getitem__(slice_)
+            return self.__dataset.__getitem__(args)
         with h5phil:
             return opt_selection_read(self.__dataset, selection)
 
