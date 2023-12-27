@@ -1,10 +1,9 @@
 """Implements support for Blosc2 optimized slicing.
 
 Please note that for a selection over a dataset to be suitable for Blosc2
-optimized slicing, (i) such slicing must be enabled globally
-(`opt_slicing_enabled()`), (ii) the dataset must be amenable to it
-(`opt_slicing_dataset_ok()`), and (iii) the selection must be amenable to it
-(`opt_slicing_selection_ok()`).
+optimized slicing, (i) such slicing must be enabled globally, (ii) the dataset
+must be amenable to it, and (iii) the selection must be amenable to it.  This
+is checked by `opt_slice_check()`.
 
 If these conditions have already been checked for a given dataset,
 `opt_selection_read()` may be used.
@@ -160,17 +159,15 @@ def opt_selection_read(dataset, selection, new_dtype=None):
     return slice_arr.reshape(ret_shape)
 
 
-def opt_slice_read(dataset, slice_, new_dtype=None):
-    """Read the specified slice from the given dataset.
+def opt_slice_check(dataset, slice_):
+    """Check that slicing the dataset can use Blosc2 optimizations.
 
     The dataset must support a property with the name in `opt_dataset_ok_prop`
     that calls `opt_slicing_dataset_ok()`.
 
-    Blosc2 optimized slice reading is used if available and suitable,
-    otherwise a `NoOptSlicingError` is raised.
-
-    A NumPy array is returned with the desired slice.  The array will have the
-    given new dtype if specified.
+    Return the selection object associated with the slice if Blosc2 optimized
+    slice reading is available and suitable, otherwise raise
+    `NoOptSlicingError`.
     """
     # In the following checks,
     # if `_no_opt_error` is not derived from `NoOptSlicingError`
@@ -189,8 +186,23 @@ def opt_slice_read(dataset, slice_, new_dtype=None):
         raise _no_opt_error(
             "Selection is not suitable for Blosc2 optimized slicing")
 
-    return opt_selection_read(dataset, selection, new_dtype)
+    return selection
 
+
+def opt_slice_read(dataset, slice_, new_dtype=None):
+    """Read the specified slice from the given dataset.
+
+    The dataset must support a property with the name in `opt_dataset_ok_prop`
+    that calls `opt_slicing_dataset_ok()`.
+
+    Blosc2 optimized slice reading is used if available and suitable,
+    otherwise a `NoOptSlicingError` is raised.
+
+    A NumPy array is returned with the desired slice.  The array will have the
+    given new dtype if specified.
+    """
+    selection = opt_slice_check(dataset, slice_)
+    return opt_selection_read(dataset, selection, new_dtype)
 
 
 class B2Dataset:
