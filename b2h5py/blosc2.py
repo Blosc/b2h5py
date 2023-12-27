@@ -245,4 +245,4 @@ class B2Dataset:
             return opt_selection_read(self.__dataset, selection)
 
     def __getattr__(self, name):  # Proxy h5py.Dataset methods and attributes
-        return getattr(self.dataset, name)
+        return getattr(self.__dataset, name)
