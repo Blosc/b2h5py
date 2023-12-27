@@ -9,7 +9,7 @@ If these conditions have already been checked for a given dataset,
 `opt_selection_read()` may be used.
 
 If a dataset is adapted for Blosc2 optimized slicing (e.g. by having its class
-monkey-patched), `opt_slice_read()` shoud suffice, as it takes care of the
+monkey-patched), `opt_slice_read()` should suffice, as it takes care of the
 checks.
 """
 
