@@ -4,7 +4,9 @@
 import numpy as np
 
 from b2h5py import B2Dataset
-from b2h5py.tests.common import StoreArrayMixin
+from b2h5py.tests.common import (Blosc2OptNotUsedError,
+                                 StoreArrayMixin,
+                                 checking_opt_slicing)
 from h5py.tests.common import TestCase
 
 
@@ -25,6 +27,10 @@ class TestB2Dataset(TestCase, StoreArrayMixin):
         self.assertEqual(b2dataset.chunks, self.dset.chunks)
 
         # Access whole array
-        self.assertArrayEqual(b2dataset[()], self.arr)
+        with checking_opt_slicing():
+            self.assertArrayEqual(b2dataset[()], self.arr)
         # Unoptimized access
+        with self.assertRaises(Blosc2OptNotUsedError):
+            with checking_opt_slicing():
+                b2dataset[::2]  # step != 1 not supported currently
         self.assertArrayEqual(b2dataset[::2], self.arr[::2])
