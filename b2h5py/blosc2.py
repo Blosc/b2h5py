@@ -235,6 +235,16 @@ class B2Dataset:
         """Whether or not Blosc2 optimized slicing is enabled"""
         return getattr(self, opt_dataset_ok_prop)
 
+    def __iter__(self):
+        # This needs to be reimplemented here,
+        # lest the base dataset iteration is called
+        # which uses its getitem, not ours.
+        shape = self.__dataset.shape
+        if len(shape) < 1:
+            return iter(self.__dataset)  # scalar, let it fail
+        for row in range(shape[0]):
+            yield self[row]
+
     def __getitem__(self, args):
         try:
             selection = opt_slice_check(self, args)

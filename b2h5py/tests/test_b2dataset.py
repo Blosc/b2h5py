@@ -36,11 +36,10 @@ class TestB2Dataset(TestCase, StoreArrayMixin):
         self.assertArrayEqual(b2dataset[::2], self.arr[::2])
 
     def testIter(self):
-        """Iteration does not hang"""
+        """Iteration does use optimization"""
         b2dataset = B2Dataset(self.dset)
         self.assertTrue(b2dataset.is_b2_fast_slicing)
 
-        b2dsiter = iter(b2dataset)
-        next(b2dsiter)
-        next(b2dsiter)
-        return
+        with checking_opt_slicing():
+            for (b2row, arow) in zip(b2dataset, self.arr):
+                self.assertArrayEqual(b2row, arow)

@@ -33,13 +33,6 @@ Finally, you may explicitly enable optimizations for a given h5py dataset by wra
     b2dset = b2h5py.B2Dataset(dset)
     # ... slicing ``b2dset`` will use Blosc2 optimization ...
 
-Please note that, for the moment, plain iteration in ``B2Dataset`` instances is not optimized (as it falls back to plain ``Dataset`` slicing). This does not affect the other approaches further above. Instead of ``for row in b2dset:`` loops, you may prefer to use slicing like::
-
-    for i in range(len(b2dset)):
-        # ... operate with ``b2dset[i]`` or ``b2dset[i, ...]`` ...
-
-We recommend that you test which approach works better for your datasets. This limitation may be fixed in the future.
-
 Building
 --------
 
