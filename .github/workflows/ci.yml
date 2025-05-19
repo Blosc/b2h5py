@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: 3.x
       - name: Download files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: b2h5py-dist
       - name: Install
@@ -58,7 +58,7 @@ jobs:
         with:
           python-version: 3.x
       - name: Download files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: b2h5py-dist
       - name: Install
