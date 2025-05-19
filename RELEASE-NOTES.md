@@ -6,4 +6,6 @@
   HDF5-Blosc2 does not add the dim info in cd_values when ndim == 1.
   This adds the dim info manually.
 
+* Upload artifact in CI bumped to v4.
+
 * Development status has been bumped to 4 - Beta.
