@@ -25,11 +25,11 @@ class SimpleSlicingTestCase(TestCase):
         self.filename = "test_slicing.h5"
         with h5py.File(self.filename, "w") as h5f:
             # 1D dataset
-            a1d = np.arange(100, dtype=np.int8)
+            a1d = np.arange(100, dtype=np.int64)
             h5f.create_dataset("1d-blosc2", data=a1d, chunks=(5,), **b2comp)
 
             # 2D dataset
-            a2d = np.arange(100, dtype=np.int8).reshape(10, 10)
+            a2d = np.arange(100, dtype=np.int64).reshape(10, 10)
             h5f.create_dataset("2d-blosc2", data=a2d, chunks=(5, 5), **b2comp)
 
     def tearDown(self):

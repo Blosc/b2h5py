@@ -90,7 +90,7 @@ def _read_chunk_slice(path, offset, slice_, dtype):
             # supported by an SChunk.
             slice_ = slice_[0]
         s = schunk[slice_]
-        return numpy.ndarray(len(s), dtype=dtype, buffer=s)
+        return numpy.ndarray(len(s) // dtype.itemsize, dtype=dtype, buffer=s)
     s = schunk[slice_]
     if s.dtype.kind != 'V':
         return s
