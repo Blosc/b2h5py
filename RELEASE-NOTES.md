@@ -1,5 +1,9 @@
 # Release notes
 
+## Changes from 0.5.1 to 0.5.2
+
+XXX version-specific blurb XXX
+
 ## Changes from 0.5.0 to 0.5.1
 
 * Fixes a bug in 1-dim arrays whose typesize is larger than 1.

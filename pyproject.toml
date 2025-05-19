@@ -20,7 +20,7 @@ classifiers = [
 authors = [
     { name = "Blosc Development Team", email = "blosc@blosc.org" },
 ]
-version = "0.5.1"
+version = "0.5.2.dev0"
 requires-python = ">= 3.3"  # contextlib.ExitStack
 dependencies = [
     "blosc2 >= 2.3.0",  # open schunk by offset
