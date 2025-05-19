@@ -7,13 +7,89 @@ be used.
 import os
 import random
 
+import hdf5plugin
 import b2h5py
+import h5py
 import numpy as np
 
 from b2h5py.tests.common import (Blosc2OptNotUsedError,
                                  StoreArrayMixin,
                                  check_opt_slicing)
 from h5py.tests.common import TestCase
+
+
+class SimpleSlicingTestCase(TestCase):
+    def setUp(self):
+        # Create test file and datasets
+        b2comp = hdf5plugin.Blosc2()
+        self.filename = "test_slicing.h5"
+        with h5py.File(self.filename, "w") as h5f:
+            # 1D dataset
+            a1d = np.arange(100, dtype=np.int8)
+            h5f.create_dataset("1d-blosc2", data=a1d, chunks=(5,), **b2comp)
+
+            # 2D dataset
+            a2d = np.arange(100, dtype=np.int8).reshape(10, 10)
+            h5f.create_dataset("2d-blosc2", data=a2d, chunks=(5, 5), **b2comp)
+
+    def tearDown(self):
+        # Clean up test file
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+    def test_1d_slicing(self):
+        """Test slicing on 1D dataset"""
+        with h5py.File(self.filename, "r") as h5f:
+            dset = h5f["1d-blosc2"]
+            b2dset = b2h5py.B2Dataset(dset)
+
+            # Test different slice patterns
+            slices = [
+                slice(2, 4),
+                slice(0, 10),
+                slice(10, 20),
+                slice(None, None, 2),
+                slice(50, None),
+                slice(None, 50)
+            ]
+
+            for item in slices:
+                regular_slice = dset[item]
+                b2_slice = b2dset[item]
+                np.testing.assert_array_equal(
+                    regular_slice, b2_slice,
+                    f"Slices don't match for {item}"
+                )
+
+    def test_2d_slicing(self):
+        """Test slicing on 2D dataset"""
+        with h5py.File(self.filename, "r") as h5f:
+            dset = h5f["2d-blosc2"]
+            b2dset = b2h5py.B2Dataset(dset)
+
+            # Test with integer index (row selection)
+            for i in range(3):
+                regular_slice = dset[i]
+                b2_slice = b2dset[i]
+                np.testing.assert_array_equal(
+                    regular_slice, b2_slice,
+                    f"Row slices don't match for index {i}"
+                )
+
+            # Test with slice on first dimension
+            slices = [
+                (slice(2, 4), slice(None)),
+                (slice(0, 5), slice(None)),
+                (slice(None, None, 2), slice(None))
+            ]
+
+            for item in slices:
+                regular_slice = dset[item]
+                b2_slice = b2dset[item]
+                np.testing.assert_array_equal(
+                    regular_slice, b2_slice,
+                    f"Slices don't match for {item}"
+                )
 
 
 class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
@@ -106,7 +182,7 @@ class Blosc2OptSlicingTestCase(TestCase, StoreArrayMixin):
 
     @check_opt_slicing
     def test_slice_outside(self):
-        """Reading a slice outside of the array (empty)"""
+        """Reading a slice outside the array (empty)"""
         shape = self.dset.shape
         slcs = [(slice(shape[0] * 2, shape[0] * 3), ...),
                 (..., slice(shape[1] * 2, shape[1] * 3)),

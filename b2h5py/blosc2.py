@@ -17,10 +17,10 @@ import os
 import platform
 
 import h5py
-import hdf5plugin
+import hdf5plugin  # noqa: F401
 import numpy
 
-from blosc2.schunk import open as b2schunk_open
+from blosc2.schunk import open as b2schunk_open, SChunk
 from h5py._hl import selections as h5sel
 from h5py._hl.base import phil as h5phil
 
@@ -81,6 +81,16 @@ def opt_slicing_enabled():
 
 def _read_chunk_slice(path, offset, slice_, dtype):
     schunk = b2schunk_open(path, mode='r', offset=offset)
+    if type(schunk) is SChunk:
+        # HDF5-Blosc2 does not add the dim info in cd_values when ndim == 1; not sure why.
+        # IMO, this would help differentiate between 1D NDArray and plain SChunk.
+        # This is a workaround for that (in b2h5py we always expect NDArray objects).
+        if isinstance(slice_, tuple):
+            # The chunk might be 1-dim, but the slice can still be a 1-tuple, which is not
+            # supported by an SChunk.
+            slice_ = slice_[0]
+        s = schunk[slice_]
+        return numpy.ndarray(len(s), dtype=dtype, buffer=s)
     s = schunk[slice_]
     if s.dtype.kind != 'V':
         return s
